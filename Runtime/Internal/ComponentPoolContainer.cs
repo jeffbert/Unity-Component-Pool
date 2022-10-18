@@ -4,7 +4,7 @@ using UnityEngine;
 namespace Bert.Pool.Internal
 {
     /// <summary>
-    /// Pool of <see cref="ComponentPoolInstance"/> instances.
+    /// Pool of <see cref="ComponentPoolObject"/> instances.
     /// </summary>
     /// <typeparam name="T">Type of component.</typeparam>
     internal sealed class ComponentPoolContainer<T>
@@ -12,7 +12,7 @@ namespace Bert.Pool.Internal
     {
         private const int DefaultCapacity = 16;
 
-        private readonly List<(ComponentPoolInstance poolInstance, T component)> _pool = new List<(ComponentPoolInstance, T)>(DefaultCapacity);
+        private readonly List<(ComponentPoolObject poolInstance, T component)> _pool = new List<(ComponentPoolObject, T)>(DefaultCapacity);
 
         /// <summary>
         /// Current number of existing instances.
@@ -42,11 +42,11 @@ namespace Bert.Pool.Internal
                 return CreateInstance(source, position, rotation, parent);
             }
 
-            (ComponentPoolInstance poolInstance, T component) = _pool[index];
+            (ComponentPoolObject poolObject, T instance) = _pool[index];
             _pool.RemoveAt(index);
-            poolInstance.Activate(position, rotation, parent);
+            poolObject.Activate(position, rotation, parent);
 
-            return component;
+            return instance;
         }
 
         /// <summary>
@@ -57,27 +57,27 @@ namespace Bert.Pool.Internal
             T instance = (T) UnityEngine.Object.Instantiate(source, position, rotation, parent);
             instance.gameObject.SetActive(true);
 
-            var poolInstance = instance.gameObject.AddComponent<ComponentPoolInstance>();
-            poolInstance.Pooled = obj => OnObjectPooled(obj, instance);
-            poolInstance.Destroyed = OnObjectDestroyed;
+            var poolObject = instance.gameObject.AddComponent<ComponentPoolObject>();
+            poolObject.Pooled = obj => OnObjectPooled(obj, instance);
+            poolObject.Destroyed = OnObjectDestroyed;
             
             ++InstanceCount;
 
             return instance;
         }
 
-        private void OnObjectPooled(ComponentPoolInstance obj, T component)
+        private void OnObjectPooled(ComponentPoolObject poolObject, T instance)
         {
-            obj.Index = _pool.Count;
-            _pool.Add((obj, component));
+            poolObject.Index = _pool.Count;
+            _pool.Add((poolObject, instance));
         }
 
-        private void OnObjectDestroyed(ComponentPoolInstance obj)
+        private void OnObjectDestroyed(ComponentPoolObject poolObject)
         {
             --InstanceCount;
             
             // Un-pooled items that are destroyed don't need to be removed from the pool.
-            int removeIndex = obj.Index;
+            int removeIndex = poolObject.Index;
             if (removeIndex < 0)
                 return;
 

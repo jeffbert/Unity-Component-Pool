@@ -44,7 +44,7 @@ namespace Bert.Pool.Editor
             rect.x += quantityRect.width;
             
             Rect parentRect = new Rect(rect) {width = sourceRect.width / 2f - quantityRect.width};
-            GUI.Label(parentRect, new GUIContent("Parent", "(Optional) Instances will be added to this transform's hierarchy when activated from the pool."));
+            GUI.Label(parentRect, new GUIContent("Parent", "(Optional) Instances will be added to this transform's hierarchy when created."));
         }
 
         private void DrawElement(Rect rect, int index, bool isActive, bool isFocused)

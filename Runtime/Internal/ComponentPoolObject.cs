@@ -7,17 +7,17 @@ namespace Bert.Pool.Internal
     /// Component added to pooled instances to react to certain Unity event callbacks.
     /// </summary>
     [AddComponentMenu("")] // Remove component from the Add Component context menu.
-    internal sealed class ComponentPoolInstance : MonoBehaviour
+    internal sealed class ComponentPoolObject : MonoBehaviour
     {
-        private const int InvalidIndex = -1;
+        private const int ActiveInstanceIndex = -1;
 
-        public Action<ComponentPoolInstance> Pooled;
-        public Action<ComponentPoolInstance> Destroyed;
+        public Action<ComponentPoolObject> Pooled;
+        public Action<ComponentPoolObject> Destroyed;
         
         /// <summary>
         /// Current index of the object in its pool when it's inactive / pooled.
         /// </summary>
-        public int Index { get; set; } = InvalidIndex;
+        public int Index { get; set; } = ActiveInstanceIndex;
 
         private Transform _transform;
 
@@ -29,7 +29,7 @@ namespace Bert.Pool.Internal
 
         public void Activate(Vector3 pos, Quaternion rot, Transform parent)
         {
-            Index = InvalidIndex;
+            Index = ActiveInstanceIndex;
             _transform.SetParent(parent);
             _transform.SetPositionAndRotation(pos, rot);
             gameObject.SetActive(true);

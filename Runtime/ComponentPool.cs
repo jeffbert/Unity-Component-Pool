@@ -20,28 +20,28 @@ namespace Bert.Pool
         /// </summary>
         public static T Get<T>(T source, Transform parent = null)
             where T : Component =>
-            Pool<T>.Get(source, Vector3.zero, Quaternion.identity, parent);
+            ComponentPool<T>.Get(source, Vector3.zero, Quaternion.identity, parent);
 
         /// <summary>
         /// Get an instance of the <paramref name="source"/>. A new instance will be created if the pool is empty.
         /// </summary>
         public static T Get<T>(T source, Vector3 position, Transform parent = null)
             where T : Component =>
-            Pool<T>.Get(source, position, Quaternion.identity, parent);
+            ComponentPool<T>.Get(source, position, Quaternion.identity, parent);
 
         /// <summary>
         /// Get an instance of the <paramref name="source"/>. A new instance will be created if the pool is empty.
         /// </summary>
         public static T Get<T>(T source, Vector3 position, Quaternion rotation, Transform parent = null)
             where T : Component =>
-            Pool<T>.Get(source, position, rotation, parent);
+            ComponentPool<T>.Get(source, position, rotation, parent);
 
         /// <summary>
         /// Replaces all elements of the array with instances of the <paramref name="source"/>.
         /// </summary>
         public static void GetMany<T>(T[] instances, T source, Vector3 position, Quaternion rotation, Transform parent = null)
             where T : Component =>
-            Pool<T>.GetMany(instances, source, position, rotation, parent);
+            ComponentPool<T>.GetMany(instances, source, position, rotation, parent);
 
         /// <summary>
         /// Adds instances of the <paramref name="source"/> to the <see cref="List{T}"/>.
@@ -49,7 +49,7 @@ namespace Bert.Pool
         /// <remarks>Does not clear the <see cref="List{T}"/> before adding elements.</remarks>
         public static void GetMany<T>(List<T> instances, int quantity, T source, Vector3 position, Quaternion rotation, Transform parent = null)
             where T : Component =>
-            Pool<T>.GetMany(instances, quantity, source, position, rotation, parent);
+            ComponentPool<T>.GetMany(instances, quantity, source, position, rotation, parent);
 
         /// <summary>
         /// Creates instances of the <see cref="source"/> component, up to the requested <see cref="quantity"/>. The number of new instances
@@ -65,9 +65,9 @@ namespace Bert.Pool
 
             if (!InitDelegateCache.TryGetValue(type, out InitInstanceDelegate action))
             {
-                MethodInfo methodInfo = typeof(Pool<>)
+                MethodInfo methodInfo = typeof(ComponentPool<>)
                     .MakeGenericType(type)
-                    .GetMethod(nameof(Pool<Component>.CreateInstances), BindingFlags.Public | BindingFlags.Static);
+                    .GetMethod(nameof(ComponentPool<Component>.CreateInstances), BindingFlags.Public | BindingFlags.Static);
 
                 if (methodInfo == null)
                 {
@@ -83,7 +83,7 @@ namespace Bert.Pool
         }
     }
 
-    internal static class Pool<T>
+    internal static class ComponentPool<T>
         where T : Component
     {
         // Each source object is mapped to its own distinct pool (different sources of the same type shouldn't use the same pool).
