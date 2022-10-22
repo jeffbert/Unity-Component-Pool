@@ -9,17 +9,25 @@ namespace Bert.Pool.Editor
     /// <summary>
     /// Used to create a simple <see cref="Type"/> dropdown menu.
     /// </summary>
-    public class TypeDropdown : AdvancedDropdown
+    public class ComponentTypeDropdown : AdvancedDropdown
     {
+        private static readonly Texture2D FallbackTexture;
+
         private readonly IReadOnlyList<Type> _types;
         private readonly Action<Type> _typeSelectedCallback;
         private readonly string _title;
 
-        /// <inheritdoc cref="TypeDropdown"/>
+        static ComponentTypeDropdown()
+        {
+            var texture = EditorGUIUtility.IconContent("cs Script Icon").image;
+            FallbackTexture = texture != null ? CreateExternalTexture(texture) : new Texture2D(0, 0);
+        }
+
+        /// <inheritdoc cref="ComponentTypeDropdown"/>
         /// <param name="types">Search for all types derived from this type.</param>
         /// <param name="typeSelectedCallback">Action to invoke when a type is selected.</param>
         /// <param name="title">Dropdown title.</param>
-        public TypeDropdown(IReadOnlyList<Type> types, Action<Type> typeSelectedCallback, string title = null)
+        public ComponentTypeDropdown(IReadOnlyList<Type> types, Action<Type> typeSelectedCallback, string title = null)
             : base(new AdvancedDropdownState())
         {
             _types = types ?? throw new ArgumentNullException(nameof(types));
@@ -38,7 +46,7 @@ namespace Bert.Pool.Editor
                     id = i,
                     icon = GetTypeIcon(type)
                 };
-                
+
                 root.AddChild(item);
             }
 
@@ -49,17 +57,16 @@ namespace Bert.Pool.Editor
         {
             _typeSelectedCallback?.Invoke(_types[item.id]);
         }
-        
+
         private static Texture2D GetTypeIcon(Type type)
-        {   
+        {
             var texture = EditorGUIUtility.ObjectContent(null, type).image;
-            if (texture == null)
-            {
-                texture = EditorGUIUtility.IconContent("cs Script Icon").image;
-                if (texture == null)
-                    texture = new Texture2D(0, 0);
-            }
-            
+
+            return texture != null ? CreateExternalTexture(texture) : FallbackTexture;
+        }
+
+        private static Texture2D CreateExternalTexture(Texture texture)
+        {
             return Texture2D.CreateExternalTexture(
                 texture.width,
                 texture.height,

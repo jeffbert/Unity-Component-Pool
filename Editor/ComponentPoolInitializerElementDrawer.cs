@@ -88,7 +88,7 @@ namespace Bert.Pool.Editor
 
         private static void ShowSelectorDropdown(SerializedProperty sourceProperty, Component sourceComponent, Rect rect)
         {
-            var selector = new TypeDropdown(
+            var selector = new ComponentTypeDropdown(
                 sourceComponent.GetComponents(typeof(Component)).Select(c => c.GetType()).ToArray(),
                 type =>
                 {
