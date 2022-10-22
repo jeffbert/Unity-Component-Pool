@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Bert.Pool
 {
-    using InitInstanceDelegate = Action<List<Component>, Component, int, Transform>;
+    using InitInstanceDelegate = Action<List<Component>, Component, int, bool>;
 
     /// <summary>
     /// Utility class for getting pooled <see cref="Component"/> instances.
@@ -56,7 +56,7 @@ namespace Bert.Pool
         /// created will be equal to the difference between the existing instance count and the requested <see cref="quantity"/>.
         /// </summary>
         /// <remarks>Does not clear the <paramref name="createdInstances"/> list before adding created instances.</remarks>
-        public static void CreateInstances(List<Component> createdInstances, Component source, int quantity, Transform parent)
+        public static void CreateInstances(List<Component> createdInstances, Component source, int quantity, bool dontDestroy)
         {
             if (source == null)
                 throw new ArgumentNullException(nameof(source));
@@ -79,7 +79,7 @@ namespace Bert.Pool
                 InitDelegateCache[type] = action;
             }
 
-            action.Invoke(createdInstances, source, quantity, parent);
+            action.Invoke(createdInstances, source, quantity, dontDestroy);
         }
     }
 
@@ -132,7 +132,7 @@ namespace Bert.Pool
             }
         }
 
-        public static void CreateInstances(List<Component> createdInstances, Component source, int quantity, Transform parent)
+        public static void CreateInstances(List<Component> createdInstances, Component source, int quantity, bool dontDestroy)
         {
             if (createdInstances == null)
                 throw new ArgumentNullException(nameof(createdInstances));
@@ -141,9 +141,22 @@ namespace Bert.Pool
             componentPoolContainer.EnsureCapacity(quantity);
             
             int requiredQuantity = quantity - componentPoolContainer.InstanceCount;
-            for (int i = 0; i < requiredQuantity; i++)
+
+            if (dontDestroy)
             {
-                createdInstances.Add(componentPoolContainer.CreateInstance(source, Vector3.zero, Quaternion.identity, parent));
+                for (int i = 0; i < requiredQuantity; i++)
+                {
+                    var instance = componentPoolContainer.CreateInstance(source, Vector3.zero, Quaternion.identity, null);
+                    UnityEngine.Object.DontDestroyOnLoad(instance);
+                    createdInstances.Add(instance);
+                }  
+            }
+            else
+            {
+                for (int i = 0; i < requiredQuantity; i++)
+                {
+                    createdInstances.Add(componentPoolContainer.CreateInstance(source, Vector3.zero, Quaternion.identity, null));
+                }   
             }
         }
 

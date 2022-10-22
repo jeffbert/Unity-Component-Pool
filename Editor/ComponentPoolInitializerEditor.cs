@@ -33,18 +33,21 @@ namespace Bert.Pool.Editor
             rect.x += HeaderOffset;
             rect.width -= HeaderOffset;
 
-            Rect sourceRect = new Rect(rect) {width = rect.width * ComponentPoolInitializerElementDrawer.SourceRectPercent};
+            float quantityFieldWidth = ComponentPoolInitializerElementDrawer.GetQuantityFieldWidth(rect);
+            float dontDestroyFieldWidth = ComponentPoolInitializerElementDrawer.GetDontDestroyFieldWidth(rect);
+            
+            Rect sourceRect = new Rect(rect) {width = rect.width - quantityFieldWidth - dontDestroyFieldWidth};
             GUI.Label(sourceRect, new GUIContent("Source", "Source component to pool."));
 
             rect.x += sourceRect.width;
 
-            Rect quantityRect = new Rect(rect) {width = Mathf.Min(ComponentPoolInitializerElementDrawer.QuantityFieldWidth, sourceRect.width / 2f)};
+            Rect quantityRect = new Rect(rect) {width = quantityFieldWidth};
             GUI.Label(quantityRect, new GUIContent("Quantity", "Amount of instances to create in the pool."));
             
             rect.x += quantityRect.width;
             
-            Rect parentRect = new Rect(rect) {width = sourceRect.width / 2f - quantityRect.width};
-            GUI.Label(parentRect, new GUIContent("Parent", "(Optional) Instances will be added to this transform's hierarchy when created."));
+            Rect dontDestroyRect = new Rect(rect) {width = dontDestroyFieldWidth};
+            GUI.Label(dontDestroyRect, new GUIContent("DD", "(Don't destroy) Created instances won't be destroyed when loading a new scene."));
         }
 
         private void DrawElement(Rect rect, int index, bool isActive, bool isFocused)

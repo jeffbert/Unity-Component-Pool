@@ -19,13 +19,13 @@ namespace Bert.Pool
             internal int _quantity = 1;
 
             [SerializeField]
-            internal Transform _parent;
+            internal bool _dontDestroy;
 
-            public void Deconstruct(out Component source, out int quantity, out Transform parent)
+            public void Deconstruct(out Component source, out int quantity, out bool dontDestroy)
             {
                 source = _source;
                 quantity = _quantity;
-                parent = _parent;
+                dontDestroy = _dontDestroy;
             }
         }
 
@@ -38,7 +38,7 @@ namespace Bert.Pool
         {
             _instances = new List<Component>(_elements.Sum(element => element._quantity));
 
-            foreach ((Component source, int quantity, Transform parent) in _elements)
+            foreach ((Component source, int quantity, bool dontDestroy) in _elements)
             {
                 if (source == null)
                 {
@@ -46,7 +46,7 @@ namespace Bert.Pool
                     continue;
                 }
 
-                ComponentPool.CreateInstances(_instances, source, quantity, parent);
+                ComponentPool.CreateInstances(_instances, source, quantity, dontDestroy);
             }
         }
 

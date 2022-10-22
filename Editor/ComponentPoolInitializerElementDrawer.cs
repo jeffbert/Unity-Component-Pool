@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -9,33 +10,51 @@ namespace Bert.Pool.Editor
     [CustomPropertyDrawer(typeof(ComponentPoolInitializerElement))]
     internal sealed class ComponentPoolInitializerElementDrawer : PropertyDrawer
     {
-        private const float Padding = 2f;
+        private const float Padding = 4f;
         private const float ButtonWidth = 36f;
-        internal const float QuantityFieldWidth = 60f;
-        internal const float SourceRectPercent = 0.55f;
+        private const float QuantityFieldWidth = 70f;
+        private const float DontDestroyFieldWidth = 30f;
 
+        private const float QuantityWidthRatio = QuantityFieldWidth / (QuantityFieldWidth + DontDestroyFieldWidth);
+
+        internal static float GetQuantityFieldWidth(Rect rect)
+        {
+            return Math.Min(QuantityFieldWidth, rect.width / 3f * QuantityWidthRatio);
+        }
+        
+        internal static float GetDontDestroyFieldWidth(Rect rect)
+        {
+            return Math.Min(DontDestroyFieldWidth, rect.width / 3f * (1 - QuantityWidthRatio));
+        }
+        
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
             var sourceRect = DrawSource(position, property);
-
+            
             position.x += sourceRect.width;
-            position.width -= sourceRect.width;
 
-            float quantityFieldWidth = Mathf.Min(QuantityFieldWidth, position.width / 2f);
-            Rect quantityRect = new Rect(position) {width = quantityFieldWidth - Padding};
+            float quantityFieldWidth = GetQuantityFieldWidth(position);
+            Rect quantityRect = new Rect(position)
+            {
+                width = quantityFieldWidth - Padding
+            };
             EditorGUI.PropertyField(quantityRect, property.FindPropertyRelative(nameof(ComponentPoolInitializerElement._quantity)), GUIContent.none);
 
             position.x += quantityFieldWidth;
-            
-            Rect parentRect = new Rect(position) {width = position.width - quantityFieldWidth};
-            EditorGUI.PropertyField(parentRect, property.FindPropertyRelative(nameof(ComponentPoolInitializerElement._parent)), GUIContent.none);
+
+            float dontDestroyFieldWidth = GetDontDestroyFieldWidth(position);
+            Rect dontDestroyRect = new Rect(position)
+            {
+                width = dontDestroyFieldWidth
+            };
+            EditorGUI.PropertyField(dontDestroyRect, property.FindPropertyRelative(nameof(ComponentPoolInitializerElement._dontDestroy)), GUIContent.none);
         }
 
         private static Rect DrawSource(Rect position, SerializedProperty property)
         {
             Undo.RecordObject(property.serializedObject.targetObject, $"{nameof(ComponentPoolInitializerElement)}.{nameof(ComponentPoolInitializerElement._source)}");
 
-            var sourceRect = new Rect(position) {width = position.width * SourceRectPercent};
+            var sourceRect = new Rect(position) {width = position.width - GetQuantityFieldWidth(position) - GetDontDestroyFieldWidth(position)};
             var rect = sourceRect;
 
             var sourceProperty = property.FindPropertyRelative(nameof(ComponentPoolInitializerElement._source));
