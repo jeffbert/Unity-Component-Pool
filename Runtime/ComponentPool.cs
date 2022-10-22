@@ -59,7 +59,7 @@ namespace Bert.Pool
         public static void CreateInstances(List<Component> createdInstances, Component source, int quantity, bool dontDestroy)
         {
             if (source == null)
-                throw new ArgumentNullException(nameof(source));
+                throw new ArgumentNullException(nameof(source), "Couldn't create instances for null source component.");
 
             var type = source.GetType();
 
@@ -99,7 +99,7 @@ namespace Bert.Pool
             where T : Component
         {
             if (source == null)
-                throw new ArgumentNullException(nameof(source));
+                throw new ArgumentNullException(nameof(source), "Couldn't destroy instances for null source component.");
             
             ComponentPool<T>.DestroyInstances(source);
         }
@@ -114,7 +114,7 @@ namespace Bert.Pool
         public static T Get(T source, Vector3 position, Quaternion rotation, Transform parent = null)
         {
             if (source == null)
-                throw new ArgumentNullException(nameof(source));
+                throw new ArgumentNullException(nameof(source), "Couldn't get instance for null source component.");
 
             return GetContainer(source).GetInstance(source, position, rotation, parent);
         }
@@ -125,7 +125,7 @@ namespace Bert.Pool
                 throw new ArgumentNullException(nameof(instances));
 
             if (source == null)
-                throw new ArgumentNullException(nameof(source));
+                throw new ArgumentNullException(nameof(source), "Couldn't get instances for null source component.");
 
             ComponentPoolContainer<T> container = GetContainer(source);
             container.EnsureCapacity(instances.Length);
@@ -143,7 +143,7 @@ namespace Bert.Pool
                 throw new ArgumentNullException(nameof(instances));
 
             if (source == null)
-                throw new ArgumentNullException(nameof(source));
+                throw new ArgumentNullException(nameof(source), "Couldn't get instances for null source component.");
 
             ComponentPoolContainer<T> container = GetContainer(source);
             container.EnsureCapacity(quantity);
