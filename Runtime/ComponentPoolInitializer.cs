@@ -42,7 +42,7 @@ namespace Bert.Pool
             {
                 if (source == null)
                 {
-                    Debug.LogWarning($"{GetType().Name}: Could not create instances for null source component in \"{name}\".", this);
+                    Debug.LogWarning($"{GetType().Name}: Couldn't create instances for null source component on \"{name}\".", this);
                     continue;
                 }
 
@@ -57,7 +57,7 @@ namespace Bert.Pool
                 instance.gameObject.SetActive(false);
             }
 
-            Destroy(this);
+            enabled = false;
         }
     }
 }
