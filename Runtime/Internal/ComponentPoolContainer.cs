@@ -14,14 +14,18 @@ namespace Bert.Pool.Internal
 
         private readonly List<(ComponentPoolObject poolInstance, T component)> _pool = new List<(ComponentPoolObject, T)>(DefaultCapacity);
 
+        private static readonly System.Action<ComponentPoolObject> EmptyCallback = _ => { };
+
         /// <summary>
         /// Current number of existing instances.
         /// </summary>
         public int InstanceCount { get; private set; }
 
         /// <summary>
-        /// Ensure the pool's capacity is at a certain value to unnecessary list allocations when adding many instances to the pool. 
+        /// Ensure the pool's capacity is at least the specified <paramref name="capacity"/> to
+        /// avoid unnecessary list allocations when adding many instances to the pool. 
         /// </summary>
+        /// <param name="capacity">The minimum capacity to ensure.</param>
         public void EnsureCapacity(int capacity)
         {
             if (_pool.Capacity < capacity)
@@ -52,9 +56,9 @@ namespace Bert.Pool.Internal
         /// <summary>
         /// Creates an instance of the <see cref="source"/> component.
         /// </summary>
-        public T CreateInstance(UnityEngine.Object source, Vector3 position, Quaternion rotation, Transform parent)
+        public T CreateInstance(Object source, Vector3 position, Quaternion rotation, Transform parent)
         {
-            T instance = (T) UnityEngine.Object.Instantiate(source, position, rotation, parent);
+            T instance = (T) Object.Instantiate(source, position, rotation, parent);
             instance.gameObject.SetActive(true);
 
             var poolObject = instance.gameObject.AddComponent<ComponentPoolObject>();
@@ -64,6 +68,20 @@ namespace Bert.Pool.Internal
             ++InstanceCount;
 
             return instance;
+        }
+
+        /// <summary>
+        /// Destroys all instances in the pool.
+        /// </summary>
+        public void DestroyInstances()
+        {
+            foreach ((ComponentPoolObject poolInstance, _) in _pool)
+            {
+                poolInstance.DestroyInstance();
+            }
+            
+            _pool.Clear();
+            _pool.Capacity = DefaultCapacity;
         }
 
         private void OnObjectPooled(ComponentPoolObject poolObject, T instance)
@@ -76,7 +94,7 @@ namespace Bert.Pool.Internal
         {
             --InstanceCount;
             
-            // Un-pooled items that are destroyed don't need to be removed from the pool.
+            // Un-pooled (or active) items that are destroyed don't need to be removed from the pool.
             int removeIndex = poolObject.Index;
             if (removeIndex < 0)
                 return;

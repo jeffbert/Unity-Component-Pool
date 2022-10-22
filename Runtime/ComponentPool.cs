@@ -81,20 +81,42 @@ namespace Bert.Pool
 
             action.Invoke(createdInstances, source, quantity, dontDestroy);
         }
+
+        /// <summary>
+        /// Destroys all <typeparamref name="T"/> component instances that were created by the <see cref="ComponentPool"/>.
+        /// </summary>
+        /// <typeparam name="T">Type of component that will have its instances destroyed.</typeparam>
+        public static void DestroyInstances<T>()
+            where T : Component =>
+            ComponentPool<T>.DestroyInstances();
+
+        /// <summary>
+        /// Destroys all instances of the specified <paramref name="source"/> component that were created by the <see cref="ComponentPool"/>.
+        /// </summary>
+        /// <typeparam name="T">Type of the source component.</typeparam>
+        /// <param name="source">Source component that will have its instances destroyed.</param>
+        public static void DestroyInstances<T>(T source)
+            where T : Component
+        {
+            if (source == null)
+                throw new ArgumentNullException(nameof(source));
+            
+            ComponentPool<T>.DestroyInstances(source);
+        }
     }
 
     internal static class ComponentPool<T>
         where T : Component
     {
         // Each source object is mapped to its own distinct pool (different sources of the same type shouldn't use the same pool).
-        private static readonly Dictionary<UnityEngine.Object, ComponentPoolContainer<T>> Pools = new Dictionary<UnityEngine.Object, ComponentPoolContainer<T>>();
+        private static readonly Dictionary<UnityEngine.Object, ComponentPoolContainer<T>> Containers = new Dictionary<UnityEngine.Object, ComponentPoolContainer<T>>();
 
         public static T Get(T source, Vector3 position, Quaternion rotation, Transform parent = null)
         {
             if (source == null)
                 throw new ArgumentNullException(nameof(source));
 
-            return GetPool(source).GetInstance(source, position, rotation, parent);
+            return GetContainer(source).GetInstance(source, position, rotation, parent);
         }
 
         public static void GetMany(T[] instances, T source, Vector3 position, Quaternion rotation, Transform parent = null)
@@ -105,12 +127,12 @@ namespace Bert.Pool
             if (source == null)
                 throw new ArgumentNullException(nameof(source));
 
-            ComponentPoolContainer<T> componentPoolContainer = GetPool(source);
-            componentPoolContainer.EnsureCapacity(instances.Length);
+            ComponentPoolContainer<T> container = GetContainer(source);
+            container.EnsureCapacity(instances.Length);
             
             for (int i = instances.Length - 1; i >= 0; --i)
             {
-                instances[i] = componentPoolContainer.GetInstance(source, position, rotation, parent);
+                instances[i] = container.GetInstance(source, position, rotation, parent);
             }
         }
 
@@ -123,12 +145,12 @@ namespace Bert.Pool
             if (source == null)
                 throw new ArgumentNullException(nameof(source));
 
-            ComponentPoolContainer<T> componentPoolContainer = GetPool(source);
-            componentPoolContainer.EnsureCapacity(quantity);
+            ComponentPoolContainer<T> container = GetContainer(source);
+            container.EnsureCapacity(quantity);
             
             for (int i = 0; i < quantity; ++i)
             {
-                instances.Add(componentPoolContainer.GetInstance(source, position, rotation, parent));
+                instances.Add(container.GetInstance(source, position, rotation, parent));
             }
         }
 
@@ -137,16 +159,16 @@ namespace Bert.Pool
             if (createdInstances == null)
                 throw new ArgumentNullException(nameof(createdInstances));
 
-            ComponentPoolContainer<T> componentPoolContainer = GetPool(source);
-            componentPoolContainer.EnsureCapacity(quantity);
+            ComponentPoolContainer<T> container = GetContainer(source);
+            container.EnsureCapacity(quantity);
             
-            int requiredQuantity = quantity - componentPoolContainer.InstanceCount;
+            int requiredQuantity = quantity - container.InstanceCount;
 
             if (dontDestroy)
             {
                 for (int i = 0; i < requiredQuantity; i++)
                 {
-                    var instance = componentPoolContainer.CreateInstance(source, Vector3.zero, Quaternion.identity, null);
+                    var instance = container.CreateInstance(source, Vector3.zero, Quaternion.identity, null);
                     UnityEngine.Object.DontDestroyOnLoad(instance);
                     createdInstances.Add(instance);
                 }  
@@ -155,20 +177,39 @@ namespace Bert.Pool
             {
                 for (int i = 0; i < requiredQuantity; i++)
                 {
-                    createdInstances.Add(componentPoolContainer.CreateInstance(source, Vector3.zero, Quaternion.identity, null));
+                    createdInstances.Add(container.CreateInstance(source, Vector3.zero, Quaternion.identity, null));
                 }   
             }
         }
 
-        private static ComponentPoolContainer<T> GetPool(UnityEngine.Object source)
+        public static void DestroyInstances()
         {
-            if (!Pools.TryGetValue(source, out ComponentPoolContainer<T> instancePool))
+            foreach (var container in Containers.Values)
             {
-                instancePool = new ComponentPoolContainer<T>();
-                Pools[source] = instancePool;
+                container.DestroyInstances();
+            }
+            
+            Containers.Clear();
+        }
+
+        public static void DestroyInstances(Component source)
+        {
+            if (!Containers.TryGetValue(source, out ComponentPoolContainer<T> container))
+                return;
+            
+            container.DestroyInstances();
+            Containers.Remove(source);
+        }
+
+        private static ComponentPoolContainer<T> GetContainer(UnityEngine.Object source)
+        {
+            if (!Containers.TryGetValue(source, out ComponentPoolContainer<T> container))
+            {
+                container = new ComponentPoolContainer<T>();
+                Containers[source] = container;
             }
 
-            return instancePool;
+            return container;
         }
     }
 }

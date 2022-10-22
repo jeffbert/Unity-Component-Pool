@@ -13,7 +13,9 @@ namespace Bert.Pool.Internal
 
         public Action<ComponentPoolObject> Pooled;
         public Action<ComponentPoolObject> Destroyed;
-        
+
+        private static Action<ComponentPoolObject> EmptyCallback = _ => { };
+
         /// <summary>
         /// Current index of the object in its pool when it's inactive / pooled.
         /// </summary>
@@ -33,6 +35,13 @@ namespace Bert.Pool.Internal
             _transform.SetParent(parent);
             _transform.SetPositionAndRotation(pos, rot);
             gameObject.SetActive(true);
+        }
+
+        public void DestroyInstance()
+        {
+            Pooled = EmptyCallback;
+            Destroyed = EmptyCallback;
+            Destroy(gameObject);
         }
     }
 }
