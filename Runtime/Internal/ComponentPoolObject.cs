@@ -14,20 +14,30 @@ namespace Bert.Pool.Internal
         public Action<ComponentPoolObject> Pooled;
         public Action<ComponentPoolObject> Destroyed;
 
-        private static Action<ComponentPoolObject> EmptyCallback = _ => { };
+        private static readonly Action<ComponentPoolObject> EmptyCallback = _ => { };
 
         /// <summary>
-        /// Current index of the object in its pool when it's inactive / pooled.
+        /// Current index of the object in its pool when it's pooled/inactive.
         /// </summary>
         public int Index { get; set; } = ActiveInstanceIndex;
 
         private Transform _transform;
 
-        private void Awake() => _transform = transform;
+        private void Awake()
+        {
+            hideFlags = HideFlags.HideAndDontSave;
+            _transform = transform;
+        }
 
-        private void OnDisable() => Pooled(this);
+        private void OnDisable()
+        {
+            Pooled(this);
+        }
 
-        private void OnDestroy() => Destroyed(this);
+        private void OnDestroy()
+        {
+            Destroyed(this);
+        }
 
         public void Activate(Vector3 pos, Quaternion rot, Transform parent)
         {

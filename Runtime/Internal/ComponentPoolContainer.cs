@@ -14,8 +14,6 @@ namespace Bert.Pool.Internal
 
         private readonly List<(ComponentPoolObject poolInstance, T component)> _pool = new List<(ComponentPoolObject, T)>(DefaultCapacity);
 
-        private static readonly System.Action<ComponentPoolObject> EmptyCallback = _ => { };
-
         /// <summary>
         /// Current number of existing instances.
         /// </summary>
@@ -94,7 +92,7 @@ namespace Bert.Pool.Internal
         {
             --InstanceCount;
             
-            // Un-pooled (or active) items that are destroyed don't need to be removed from the pool.
+            // Un-pooled/active items that are destroyed don't need to be removed from the pool.
             int removeIndex = poolObject.Index;
             if (removeIndex < 0)
                 return;
