@@ -7,18 +7,17 @@ namespace Bert.Pool.Internal
     /// Component added to pooled instances to react to certain Unity event callbacks.
     /// </summary>
     [AddComponentMenu("")] // Remove component from the Add Component context menu.
-    internal sealed class ComponentPoolObject : MonoBehaviour
+    internal sealed class PoolObject : MonoBehaviour
     {
-        private Action<ComponentPoolObject> _pooled = EmptyCallback;
-        private Action<ComponentPoolObject> _destroyed = EmptyCallback;
-
-        private static readonly Action<ComponentPoolObject> EmptyCallback = _ => { };
+        private static readonly Action<PoolObject> EmptyCallback = _ => { };
 
         /// <summary>
         /// Index of the object in its respective pool.
         /// </summary>
         public int Index { get; set; } = -1;
 
+        private Action<PoolObject> _pooled = EmptyCallback;
+        private Action<PoolObject> _destroyed = EmptyCallback;
         private Transform _transform;
 
         private void Awake()
@@ -37,7 +36,7 @@ namespace Bert.Pool.Internal
             _destroyed(this);
         }
 
-        public void SetCallbacks(Action<ComponentPoolObject> pooled, Action<ComponentPoolObject> destroyed)
+        public void SetCallbacks(Action<PoolObject> pooled, Action<PoolObject> destroyed)
         {
             _pooled = pooled ?? EmptyCallback;
             _destroyed = destroyed ?? EmptyCallback;

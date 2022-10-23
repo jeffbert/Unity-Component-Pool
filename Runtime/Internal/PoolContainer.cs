@@ -4,15 +4,15 @@ using UnityEngine;
 namespace Bert.Pool.Internal
 {
     /// <summary>
-    /// Pool of <see cref="ComponentPoolObject"/> instances.
+    /// Pool of <see cref="PoolObject"/> instances.
     /// </summary>
     /// <typeparam name="T">Type of component.</typeparam>
-    internal sealed class ComponentPoolContainer<T>
+    internal sealed class PoolContainer<T>
         where T : Component
     {
         private const int DefaultCapacity = 8;
 
-        private readonly List<(ComponentPoolObject poolInstance, T component)> _instances = new List<(ComponentPoolObject, T)>(DefaultCapacity);
+        private readonly List<(PoolObject poolInstance, T component)> _instances = new List<(PoolObject, T)>(DefaultCapacity);
         private int _poolCount;
 
         /// <summary>
@@ -44,7 +44,7 @@ namespace Bert.Pool.Internal
             int index = _instances.Count - _poolCount;
             --_poolCount;
             
-            (ComponentPoolObject poolObject, T instance) = _instances[index];
+            (PoolObject poolObject, T instance) = _instances[index];
             poolObject.Activate(position, rotation, parent);
 
             return instance;
@@ -58,7 +58,7 @@ namespace Bert.Pool.Internal
             T instance = (T) Object.Instantiate(source, position, rotation, parent);
             instance.gameObject.SetActive(true);
 
-            var poolObject = instance.gameObject.AddComponent<ComponentPoolObject>();
+            var poolObject = instance.gameObject.AddComponent<PoolObject>();
             poolObject.SetCallbacks(OnObjectPooled, OnObjectDestroyed);
             poolObject.Index = _instances.Count;
             
@@ -72,7 +72,7 @@ namespace Bert.Pool.Internal
         /// </summary>
         public void DestroyInstances()
         {
-            foreach ((ComponentPoolObject poolInstance, T component) in _instances)
+            foreach ((PoolObject poolInstance, T component) in _instances)
             {
                 poolInstance.SetCallbacks(null, null);
                 Object.Destroy(component.gameObject);
@@ -82,7 +82,7 @@ namespace Bert.Pool.Internal
             _poolCount = 0;
         }
 
-        private void OnObjectPooled(ComponentPoolObject poolObject)
+        private void OnObjectPooled(PoolObject poolObject)
         {
             ++_poolCount;
             int targetIndex = _instances.Count - _poolCount;
@@ -95,7 +95,7 @@ namespace Bert.Pool.Internal
             _instances[targetIndex].poolInstance.Index = targetIndex;
         }
 
-        private void OnObjectDestroyed(ComponentPoolObject poolObject)
+        private void OnObjectDestroyed(PoolObject poolObject)
         {
             // Instances are always pooled before they're destroyed.
             --_poolCount;
