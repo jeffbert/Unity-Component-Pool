@@ -10,14 +10,15 @@ namespace Bert.Pool.Internal
     internal sealed class ComponentPoolContainer<T>
         where T : Component
     {
-        private const int DefaultCapacity = 16;
+        private const int DefaultCapacity = 8;
 
-        private readonly List<(ComponentPoolObject poolInstance, T component)> _pool = new List<(ComponentPoolObject, T)>(DefaultCapacity);
+        private readonly List<(ComponentPoolObject poolInstance, T component)> _instances = new List<(ComponentPoolObject, T)>(DefaultCapacity);
+        private int _poolCount;
 
         /// <summary>
-        /// Current number of existing instances.
+        /// Total number of instances created by the pool.
         /// </summary>
-        public int InstanceCount { get; private set; }
+        public int InstanceCount => _instances.Count;
 
         /// <summary>
         /// Ensure the pool's capacity is at least the specified <paramref name="capacity"/> to
@@ -26,9 +27,9 @@ namespace Bert.Pool.Internal
         /// <param name="capacity">The minimum capacity to ensure.</param>
         public void EnsureCapacity(int capacity)
         {
-            if (_pool.Capacity < capacity)
+            if (_instances.Capacity < capacity)
             {
-                _pool.Capacity = capacity;
+                _instances.Capacity = capacity;
             }
         }
 
@@ -37,15 +38,13 @@ namespace Bert.Pool.Internal
         /// </summary>
         public T GetInstance(T source, Vector3 position, Quaternion rotation, Transform parent)
         {
-            int index = _pool.Count - 1;
-            if (index == -1)
-            {
-                // Empty pool.
+            if (_poolCount == 0)
                 return CreateInstance(source, position, rotation, parent);
-            }
 
-            (ComponentPoolObject poolObject, T instance) = _pool[index];
-            _pool.RemoveAt(index);
+            int index = _instances.Count - _poolCount;
+            --_poolCount;
+            
+            (ComponentPoolObject poolObject, T instance) = _instances[index];
             poolObject.Activate(position, rotation, parent);
 
             return instance;
@@ -60,10 +59,10 @@ namespace Bert.Pool.Internal
             instance.gameObject.SetActive(true);
 
             var poolObject = instance.gameObject.AddComponent<ComponentPoolObject>();
-            poolObject.Pooled = obj => OnObjectPooled(obj, instance);
-            poolObject.Destroyed = OnObjectDestroyed;
+            poolObject.SetCallbacks(OnObjectPooled, OnObjectDestroyed);
+            poolObject.Index = _instances.Count;
             
-            ++InstanceCount;
+            _instances.Add((poolObject, instance));
 
             return instance;
         }
@@ -73,35 +72,41 @@ namespace Bert.Pool.Internal
         /// </summary>
         public void DestroyInstances()
         {
-            foreach ((ComponentPoolObject poolInstance, _) in _pool)
+            foreach ((ComponentPoolObject poolInstance, T component) in _instances)
             {
-                poolInstance.DestroyInstance();
+                poolInstance.SetCallbacks(null, null);
+                Object.Destroy(component.gameObject);
             }
-            
-            _pool.Clear();
-            _pool.Capacity = DefaultCapacity;
+
+            _instances.Clear();
+            _poolCount = 0;
         }
 
-        private void OnObjectPooled(ComponentPoolObject poolObject, T instance)
+        private void OnObjectPooled(ComponentPoolObject poolObject)
         {
-            poolObject.Index = _pool.Count;
-            _pool.Add((poolObject, instance));
+            ++_poolCount;
+            int targetIndex = _instances.Count - _poolCount;
+            int activeIndex = poolObject.Index;
+            
+            // Swap pooled object with last active instance in the list.
+            (_instances[activeIndex], _instances[targetIndex]) = (_instances[targetIndex], _instances[activeIndex]);
+            
+            _instances[activeIndex].poolInstance.Index = activeIndex;
+            _instances[targetIndex].poolInstance.Index = targetIndex;
         }
 
         private void OnObjectDestroyed(ComponentPoolObject poolObject)
         {
-            --InstanceCount;
+            // Instances are always pooled before they're destroyed.
+            --_poolCount;
             
-            // Un-pooled/active items that are destroyed don't need to be removed from the pool.
-            int removeIndex = poolObject.Index;
-            if (removeIndex < 0)
-                return;
+            int destroyedIndex = poolObject.Index;
+            int lastIndex = _instances.Count - 1;
 
             // Replace the destroyed instance with the last one in the list.
-            int lastIndex = _pool.Count - 1;
-            _pool[removeIndex] = _pool[lastIndex];
-            _pool[removeIndex].poolInstance.Index = removeIndex;
-            _pool.RemoveAt(lastIndex);
+            _instances[destroyedIndex] = _instances[lastIndex];
+            _instances[destroyedIndex].poolInstance.Index = destroyedIndex;
+            _instances.RemoveAt(lastIndex);
         }
     }
 }

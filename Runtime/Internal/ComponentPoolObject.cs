@@ -9,17 +9,15 @@ namespace Bert.Pool.Internal
     [AddComponentMenu("")] // Remove component from the Add Component context menu.
     internal sealed class ComponentPoolObject : MonoBehaviour
     {
-        private const int ActiveInstanceIndex = -1;
-
-        public Action<ComponentPoolObject> Pooled;
-        public Action<ComponentPoolObject> Destroyed;
+        private Action<ComponentPoolObject> _pooled = EmptyCallback;
+        private Action<ComponentPoolObject> _destroyed = EmptyCallback;
 
         private static readonly Action<ComponentPoolObject> EmptyCallback = _ => { };
 
         /// <summary>
-        /// Current index of the object in its pool when it's pooled/inactive.
+        /// Index of the object in its respective pool.
         /// </summary>
-        public int Index { get; set; } = ActiveInstanceIndex;
+        public int Index { get; set; } = -1;
 
         private Transform _transform;
 
@@ -31,27 +29,25 @@ namespace Bert.Pool.Internal
 
         private void OnDisable()
         {
-            Pooled(this);
+            _pooled(this);
         }
 
         private void OnDestroy()
         {
-            Destroyed(this);
+            _destroyed(this);
+        }
+
+        public void SetCallbacks(Action<ComponentPoolObject> pooled, Action<ComponentPoolObject> destroyed)
+        {
+            _pooled = pooled ?? EmptyCallback;
+            _destroyed = destroyed ?? EmptyCallback;
         }
 
         public void Activate(Vector3 pos, Quaternion rot, Transform parent)
         {
-            Index = ActiveInstanceIndex;
             _transform.SetParent(parent);
             _transform.SetPositionAndRotation(pos, rot);
             gameObject.SetActive(true);
-        }
-
-        public void DestroyInstance()
-        {
-            Pooled = EmptyCallback;
-            Destroyed = EmptyCallback;
-            Destroy(gameObject);
         }
     }
 }

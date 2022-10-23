@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -9,7 +10,7 @@ namespace Bert.Pool
     /// </summary>
     public sealed class ComponentPoolInitializer : MonoBehaviour
     {
-        [System.Serializable]
+        [Serializable]
         internal sealed class PoolInitializerElement
         {
             [SerializeField]
@@ -30,7 +31,7 @@ namespace Bert.Pool
         }
 
         [SerializeField]
-        internal PoolInitializerElement[] _elements;
+        internal PoolInitializerElement[] _elements = Array.Empty<PoolInitializerElement>();
 
         private List<Component> _instances;
 
