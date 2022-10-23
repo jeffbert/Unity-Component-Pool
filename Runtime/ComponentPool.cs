@@ -95,7 +95,7 @@ namespace Bert.Pool
         /// </summary>
         /// <typeparam name="T">Type of the source component.</typeparam>
         /// <param name="source">Source component that will have its instances destroyed.</param>
-        public static void DestroyInstances<T>(T source)
+        public static void DestroySourceInstances<T>(T source)
             where T : Component
         {
             if (source == null)
