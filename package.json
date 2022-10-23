@@ -13,5 +13,8 @@
     "name": "Jeffrey Mainville-Bertrand",
     "email": "jeffbert000@gmail.com",
     "url": "https://www.linkedin.com/in/jeffrey-mainville-bertrand-05495627/"
+  },
+  "dependencies": {
+    "com.unity.ext.nunit": "1.0.6"
   }
 }
