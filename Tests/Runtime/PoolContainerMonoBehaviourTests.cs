@@ -1,5 +1,4 @@
-﻿using Bert.Pool.Internal;
-
+﻿
 namespace Bert.Pool.Tests
 {
     // ReSharper disable once UnusedType.Global - Class used in tests.
