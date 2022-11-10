@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 
 namespace Bert.Pool.Internal
@@ -9,16 +8,13 @@ namespace Bert.Pool.Internal
     [AddComponentMenu("")] // Remove component from the Add Component context menu.
     internal sealed class PoolObject : MonoBehaviour
     {
-        private static readonly Action<PoolObject> EmptyCallback = _ => { };
-
         /// <summary>
         /// Index of the object in its respective pool.
         /// </summary>
         public int Index { get; set; } = -1;
 
-        private Action<PoolObject> _pooled = EmptyCallback;
-        private Action<PoolObject> _destroyed = EmptyCallback;
         private Transform _transform;
+        private IPoolContainer _container = DummyContainer.Instance;
 
         private void Awake()
         {
@@ -28,18 +24,17 @@ namespace Bert.Pool.Internal
 
         private void OnDisable()
         {
-            _pooled(this);
+            _container.Pool(this);
         }
 
         private void OnDestroy()
         {
-            _destroyed(this);
+            _container.Destroy(this);
         }
 
-        public void SetCallbacks(Action<PoolObject> pooled, Action<PoolObject> destroyed)
+        public void SetContainer(IPoolContainer container)
         {
-            _pooled = pooled ?? EmptyCallback;
-            _destroyed = destroyed ?? EmptyCallback;
+            _container = container ?? DummyContainer.Instance;
         }
 
         public void Activate(Vector3 pos, Quaternion rot, Transform parent)
@@ -47,6 +42,16 @@ namespace Bert.Pool.Internal
             _transform.SetParent(parent);
             _transform.SetPositionAndRotation(pos, rot);
             gameObject.SetActive(true);
+        }
+        
+        private sealed class DummyContainer : IPoolContainer
+        {
+            public static readonly DummyContainer Instance = new DummyContainer();
+
+            private DummyContainer() { }
+            
+            public void Pool(PoolObject poolObject) { }
+            public void Destroy(PoolObject poolObject) { }
         }
     }
 }
