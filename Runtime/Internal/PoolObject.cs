@@ -9,12 +9,12 @@ namespace Bert.Pool.Internal
     internal sealed class PoolObject : MonoBehaviour
     {
         /// <summary>
-        /// Index of the object in its respective pool.
+        /// Index of the object in its respective <see cref="PoolContainer{T}"/>.
         /// </summary>
         public int Index { get; set; } = -1;
 
         private Transform _transform;
-        private IPoolContainer _container = DummyContainer.Instance;
+        private IPoolObjectManager _manager;
 
         private void Awake()
         {
@@ -24,17 +24,17 @@ namespace Bert.Pool.Internal
 
         private void OnDisable()
         {
-            _container.Pool(this);
+            _manager?.Pool(this);
         }
 
         private void OnDestroy()
         {
-            _container.Destroy(this);
+            _manager?.Destroy(this);
         }
 
-        public void SetContainer(IPoolContainer container)
+        public void SetContainer(IPoolObjectManager manager)
         {
-            _container = container ?? DummyContainer.Instance;
+            _manager = manager;
         }
 
         public void Activate(Vector3 pos, Quaternion rot, Transform parent)
@@ -42,16 +42,6 @@ namespace Bert.Pool.Internal
             _transform.SetParent(parent);
             _transform.SetPositionAndRotation(pos, rot);
             gameObject.SetActive(true);
-        }
-        
-        private sealed class DummyContainer : IPoolContainer
-        {
-            public static readonly DummyContainer Instance = new DummyContainer();
-
-            private DummyContainer() { }
-            
-            public void Pool(PoolObject poolObject) { }
-            public void Destroy(PoolObject poolObject) { }
         }
     }
 }

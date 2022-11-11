@@ -1,6 +1,6 @@
 ﻿namespace Bert.Pool.Internal
 {
-    internal interface IPoolContainer
+    internal interface IPoolObjectManager
     {
         void Pool(PoolObject poolObject);
         void Destroy(PoolObject poolObject);

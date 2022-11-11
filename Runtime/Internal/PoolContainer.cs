@@ -7,7 +7,7 @@ namespace Bert.Pool.Internal
     /// Pool of <see cref="PoolObject"/> instances.
     /// </summary>
     /// <typeparam name="T">Type of component.</typeparam>
-    internal sealed class PoolContainer<T> : IPoolContainer 
+    internal sealed class PoolContainer<T> : IPoolObjectManager 
         where T : Component
     {
         private const int DefaultCapacity = 8;
