@@ -10,6 +10,8 @@ namespace Bert.Pool.Internal
     internal sealed class PoolContainer<T> : IPoolObjectManager 
         where T : Component
     {
+        private static readonly string PoolInstanceSuffix = $" (Pool: {typeof(T).Name})";
+        
         private const int DefaultCapacity = 8;
 
         private readonly List<(PoolObject poolInstance, T component)> _instances = new List<(PoolObject, T)>(DefaultCapacity);
@@ -57,6 +59,10 @@ namespace Bert.Pool.Internal
         {
             T instance = (T) Object.Instantiate(source, position, rotation, parent);
             instance.gameObject.SetActive(true);
+            
+#if UNITY_EDITOR
+            instance.name = GetPoolInstanceName(instance.name);
+#endif
 
             var poolObject = instance.gameObject.AddComponent<PoolObject>();
             poolObject.SetContainer(this);
@@ -107,6 +113,15 @@ namespace Bert.Pool.Internal
             _instances[destroyedIndex] = _instances[lastIndex];
             _instances[destroyedIndex].poolInstance.Index = destroyedIndex;
             _instances.RemoveAt(lastIndex);
+        }
+
+        private static string GetPoolInstanceName(string name)
+        {
+            int endIndex = name.Length - "(Clone)".Length;
+            if (endIndex <= 0)
+                return name + PoolInstanceSuffix;
+
+            return name.Substring(0, endIndex) + PoolInstanceSuffix;
         }
     }
 }
