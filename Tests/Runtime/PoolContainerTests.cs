@@ -7,46 +7,24 @@ using UnityEngine.TestTools.Utils;
 
 namespace Bert.Pool.Tests
 {
-    /// <summary>
-    /// Base class for testing different types of component pool containers.
-    /// </summary>
-    /// <typeparam name="T">Pool container's component type.</typeparam>
-    public abstract class PoolContainerTests<T>
-        where T : Component
+    internal class PoolContainerTests
     {
-        private PoolContainer<T> _container;
+        private PoolContainer<MockMonoBehaviour> _container;
+        private MockMonoBehaviour _source;
         
-        protected T Source { get; private set; }
+        private MockMonoBehaviour GetInstance() => _container.GetInstance(_source, Vector3.zero, Quaternion.identity, null);
         
-        /// <summary>
-        /// Returns an instance from the <see cref="PoolContainer{T}"/>.
-        /// </summary>
-        /// <returns>Instance of the component.</returns>
-        protected T GetInstance() => _container.GetInstance(Source, Vector3.zero, Quaternion.identity, null);
-        
-        protected virtual T InitializeSourceComponent(GameObject sourceGameObject)
-        {
-            return sourceGameObject.TryGetComponent(out T component) ? component : sourceGameObject.AddComponent<T>();
-        }
-
         [SetUp]
         public void Setup()
         {
-            _container = new PoolContainer<T>();
-
-            var obj = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            Source = InitializeSourceComponent(obj);
-            
-            UnityEngine.Assertions.Assert.IsNotNull(Source, $"Source component was null. {GetType().Name}.{nameof(InitializeSourceComponent)} must return a non-null component.");
+            _container = new PoolContainer<MockMonoBehaviour>();
+            _source =  new GameObject(nameof(MockMonoBehaviour)).AddComponent<MockMonoBehaviour>();
         }
 
         [TearDown]
         public void TearDown()
         {
-            if (Source != null)
-            {
-                Object.DestroyImmediate(Source.gameObject);
-            }
+            Object.DestroyImmediate(_source.gameObject);
         }
 
         [Test]
@@ -54,7 +32,7 @@ namespace Bert.Pool.Tests
         {
             var instance = GetInstance();
             UnityEngine.Assertions.Assert.IsNotNull(instance);
-            UnityEngine.Assertions.Assert.AreNotEqual(Source, instance);
+            UnityEngine.Assertions.Assert.AreNotEqual(_source, instance);
 
             Object.DestroyImmediate(instance.gameObject);
         }
@@ -64,7 +42,7 @@ namespace Bert.Pool.Tests
         {
             var instance = GetInstance();
             UnityEngine.Assertions.Assert.IsNotNull(instance);
-            UnityEngine.Assertions.Assert.AreNotEqual(Source, instance);
+            UnityEngine.Assertions.Assert.AreNotEqual(_source, instance);
 
             Object.DestroyImmediate(instance.gameObject);
         }
@@ -73,7 +51,7 @@ namespace Bert.Pool.Tests
         public void GetInstance_ReturnsInstance_AtCorrectPosition()
         {
             var position = new Vector3(5, -10, 10);
-            var instance = _container.GetInstance(Source, position, Quaternion.identity, null);
+            var instance = _container.GetInstance(_source, position, Quaternion.identity, null);
             var instancePosition = instance.transform.position;
 
             Assert.That(position, Is.EqualTo(instancePosition).Using(Vector3EqualityComparer.Instance));
@@ -85,7 +63,7 @@ namespace Bert.Pool.Tests
         public void GetInstance_ReturnsInstance_WithCorrectRotation()
         {
             var rotation = Quaternion.Euler(90, -90, 15);
-            var instance = _container.GetInstance(Source, Vector3.zero, rotation, null);
+            var instance = _container.GetInstance(_source, Vector3.zero, rotation, null);
             var instanceRotation = instance.transform.rotation;
 
             Assert.That(rotation, Is.EqualTo(instanceRotation).Using(QuaternionEqualityComparer.Instance));
@@ -97,7 +75,7 @@ namespace Bert.Pool.Tests
         public void GetInstance_ReturnsInstance_WithCorrectParent()
         {
             var parent = Utils.CreatePrimitive(PrimitiveType.Sphere).transform;
-            var instance = _container.GetInstance(Source, Vector3.zero, Quaternion.identity, parent);
+            var instance = _container.GetInstance(_source, Vector3.zero, Quaternion.identity, parent);
             var instanceParent = instance.transform.parent;
 
             UnityEngine.Assertions.Assert.AreEqual(parent, instanceParent);
