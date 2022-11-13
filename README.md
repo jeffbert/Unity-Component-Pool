@@ -2,7 +2,11 @@
 
 ## Description
 
-Pooling system designed to work with Unity components. Using the component pool essentially comes down to replacing `Object.Instantiate` calls with `ComponentPool.Get`. Component instances (created with `ComponentPool.Get`) are pooled by simply disabling their game objects, allowing them to be reused (or unpooled) on subsequent `ComponentPool.Get` calls. 
+Pooling system designed to work with Unity components.
+
+## Usage
+
+Using the component pool essentially comes down to replacing `Object.Instantiate` calls with `ComponentPool.Get`. Component instances (created with `ComponentPool.Get`) are pooled by deactivating their corresponding game objects, allowing them to be reused on subsequent `ComponentPool.Get` calls.
 
 ### Example
 
@@ -22,7 +26,7 @@ void Start()
 {
    _instance.DoSomething();
 
-   // Instances created with ComponentPool by disabling their game objects.
+   // Pool component instance by deactivating its game object.
    _instance.gameObject.SetActive(false);
 }
 ```
