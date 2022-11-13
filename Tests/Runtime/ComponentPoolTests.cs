@@ -122,7 +122,7 @@ namespace Bert.Pool.Tests
             const int instanceCount = 3;
             var instances = new List<MockMonoBehaviour>(instanceCount);
             
-            ComponentPool.GetMany(instances, instanceCount, _source, Vector3.zero, Quaternion.identity);
+            ComponentPool.GetMany(instances, _source, instanceCount, Vector3.zero, Quaternion.identity);
 
             Assert.That(instances.Count, Is.EqualTo(instanceCount));
 
@@ -138,10 +138,10 @@ namespace Bert.Pool.Tests
         {
             const int instanceCount = 1;
             var instances = new List<MockMonoBehaviour>();
-            ComponentPool.GetMany(instances, instanceCount, _source, Vector3.zero, Quaternion.identity);
+            ComponentPool.GetMany(instances, _source, instanceCount, Vector3.zero, Quaternion.identity);
 
             const int appendInstanceCount = 2;
-            ComponentPool.GetMany(instances, appendInstanceCount, _source, Vector3.zero, Quaternion.identity);
+            ComponentPool.GetMany(instances, _source, appendInstanceCount, Vector3.zero, Quaternion.identity);
             
             Assert.That(instances.Count, Is.EqualTo(instanceCount + appendInstanceCount));
 

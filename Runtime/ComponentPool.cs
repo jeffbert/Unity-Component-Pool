@@ -47,7 +47,7 @@ namespace Bert.Pool
         /// Adds instances of the <paramref name="source"/> to the <see cref="List{T}"/>.
         /// </summary>
         /// <remarks>Does not clear the <see cref="List{T}"/> before adding elements.</remarks>
-        public static void GetMany<T>(List<T> instances, int quantity, T source, Vector3 position, Quaternion rotation, Transform parent = null)
+        public static void GetMany<T>(List<T> instances, T source, int quantity, Vector3 position, Quaternion rotation, Transform parent = null)
             where T : Component =>
             ComponentPool<T>.GetMany(instances, quantity, source, position, rotation, parent);
 
