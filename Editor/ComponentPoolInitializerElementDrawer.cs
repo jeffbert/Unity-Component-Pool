@@ -2,7 +2,6 @@
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
-
 using ComponentPoolInitializerElement = Bert.Pool.ComponentPoolInitializer.PoolInitializerElement;
 
 namespace Bert.Pool.Editor
@@ -10,6 +9,7 @@ namespace Bert.Pool.Editor
     [CustomPropertyDrawer(typeof(ComponentPoolInitializerElement))]
     internal sealed class ComponentPoolInitializerElementDrawer : PropertyDrawer
     {
+        private const string Icon = "d_Settings@2x";
         private const float Padding = 4f;
         private const float ButtonWidth = 36f;
         private const float QuantityFieldWidth = 70f;
@@ -21,16 +21,16 @@ namespace Bert.Pool.Editor
         {
             return Math.Min(QuantityFieldWidth, rect.width / 3f * QuantityWidthRatio);
         }
-        
+
         internal static float GetDontDestroyFieldWidth(Rect rect)
         {
             return Math.Min(DontDestroyFieldWidth, rect.width / 3f * (1 - QuantityWidthRatio));
         }
-        
+
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
             var sourceRect = DrawSource(position, property);
-            
+
             position.x += sourceRect.width;
 
             float quantityFieldWidth = GetQuantityFieldWidth(position);
@@ -58,12 +58,12 @@ namespace Bert.Pool.Editor
             var rect = sourceRect;
 
             var sourceProperty = property.FindPropertyRelative(nameof(ComponentPoolInitializerElement._source));
-            
+
             var sourceComponent = sourceProperty.objectReferenceValue as Component;
             if (sourceComponent != null)
             {
                 Rect buttonRect = new Rect(position) {width = ButtonWidth + Padding};
-                if (GUI.Button(buttonRect, EditorGUIUtility.IconContent("CustomTool", "Change source component")))
+                if (GUI.Button(buttonRect, EditorIconUtility.GetEditorIcon(Icon, "Change source component")))
                 {
                     ShowSelectorDropdown(sourceProperty, sourceComponent, sourceRect);
                 }
@@ -84,7 +84,6 @@ namespace Bert.Pool.Editor
 
             return sourceRect;
         }
-
 
         private static void ShowSelectorDropdown(SerializedProperty sourceProperty, Component sourceComponent, Rect rect)
         {
