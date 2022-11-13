@@ -136,8 +136,7 @@ namespace Bert.Pool
             }
         }
 
-        public static void GetMany(List<T> instances, int quantity, T source, Vector3 position, Quaternion rotation,
-            Transform parent = null)
+        public static void GetMany(List<T> instances, int quantity, T source, Vector3 position, Quaternion rotation, Transform parent = null)
         {
             if (instances == null)
                 throw new ArgumentNullException(nameof(instances));
