@@ -145,4 +145,5 @@ void Awake()
 
 ## Misc ##
 
+- [CHANGELOG](CHANGELOG.md)
 - [LICENSE](LICENSE)
