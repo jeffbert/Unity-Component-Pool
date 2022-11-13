@@ -88,6 +88,7 @@ namespace Bert.Pool.Internal
             _poolCount = 0;
         }
 
+        /// <inheritdoc />
         public void Pool(PoolObject poolObject)
         {
             ++_poolCount;
@@ -101,6 +102,7 @@ namespace Bert.Pool.Internal
             _instances[targetIndex].poolInstance.Index = targetIndex;
         }
 
+        /// <inheritdoc />
         public void Destroy(PoolObject poolObject)
         {
             // Instances are always pooled before they're destroyed.
