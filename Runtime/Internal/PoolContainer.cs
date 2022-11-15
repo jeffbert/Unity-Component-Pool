@@ -65,7 +65,7 @@ namespace Bert.Pool.Internal
 #endif
 
             var poolObject = instance.gameObject.AddComponent<PoolObject>();
-            poolObject.SetContainer(this);
+            poolObject.SetManager(this);
             poolObject.Index = _instances.Count;
             
             _instances.Add((poolObject, instance));
@@ -80,7 +80,7 @@ namespace Bert.Pool.Internal
         {
             foreach ((PoolObject poolInstance, T component) in _instances)
             {
-                poolInstance.SetContainer(null);
+                poolInstance.SetManager(null);
                 Object.Destroy(component.gameObject);
             }
 

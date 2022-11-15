@@ -32,7 +32,7 @@ namespace Bert.Pool.Internal
             _manager?.Destroy(this);
         }
 
-        public void SetContainer(IPoolObjectManager manager)
+        public void SetManager(IPoolObjectManager manager)
         {
             _manager = manager;
         }
