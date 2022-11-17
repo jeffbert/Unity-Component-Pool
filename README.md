@@ -4,6 +4,10 @@
 
 Pooling system designed to work with Unity components.
 
+## Installation
+
+Install with Unity's [Package Manager](https://docs.unity3d.com/Manual/upm-ui-giturl.html) or by copying the repository's contents in your project.
+
 ## Usage
 
 Using the component pool essentially comes down to replacing `Object.Instantiate` calls with `ComponentPool.Get`. Component instances (created with `ComponentPool.Get`) are pooled by deactivating their corresponding game objects, allowing them to be reused on subsequent `ComponentPool.Get` calls.
@@ -30,10 +34,6 @@ void Start()
    _instance.gameObject.SetActive(false);
 }
 ```
-
-## Installation
-
-Can be installed with Unity's [Package Manager](https://docs.unity3d.com/Manual/upm-ui-giturl.html) or by copying the repository's contents in your project.
 
 ## Initializing instances
 
