@@ -33,13 +33,7 @@ void Start()
 
 ## Installation
 
-Can be installed with the [Package Manager](https://docs.unity3d.com/Manual/upm-ui-giturl.html) or by copying the repository's contents in your project.
-
-![picture alt](.github/images/package-manager.png "Installing git package with Package Manager")
-
-```
-https://github.com/jeffbert/Unity-Component-Pool.git
-```
+Can be installed with Unity's [Package Manager](https://docs.unity3d.com/Manual/upm-ui-giturl.html) or by copying the repository's contents in your project.
 
 ## Initializing instances
 
