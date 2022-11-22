@@ -39,15 +39,15 @@ void Start()
 
 Component instances can be initialized with the `ComponentPoolInitializer` component. It's important to specify the component type that you want to pool, since pools are created per source component (and not per game object).
 
-![picture alt](.github/images/pool-initializer-1.png "Component Pool Initializer inspector")
+![Inspector](https://raw.githubusercontent.com/jeffbert/Unity-Component-Pool/main/.github/images/pool-initializer-1.png "Component Pool Initializer inspector")
 
 You can change the component that will be pooled by clicking the gear button.
 
-![picture alt](.github/images/pool-initializer-2.png "Component Pool Initializer - Selecting the source component to pool.")
+![Selector](https://raw.githubusercontent.com/jeffbert/Unity-Component-Pool/main/.github/images/pool-initializer-2.png "Component Pool Initializer - Selecting the source component to pool.")
 
 Different types of components can be initialized within the same `ComponentPoolInitializer` component.
 
-![picture alt](.github/images/pool-initializer-3.png "Component Pool Initializer - Selecting the source component to pool.")
+![Source Component](https://raw.githubusercontent.com/jeffbert/Unity-Component-Pool/main/.github/images/pool-initializer-3.png "Component Pool Initializer - Selecting the source component to pool.")
 
 ## API
 
