@@ -143,5 +143,5 @@ void Awake()
 
 ## Misc ##
 
-- [CHANGELOG](CHANGELOG.md)
-- [LICENSE](LICENSE)
+- [CHANGELOG](https://raw.githubusercontent.com/jeffbert/Unity-Component-Pool/main/CHANGELOG.md)
+- [LICENSE](https://raw.githubusercontent.com/jeffbert/Unity-Component-Pool/main/LICENSE)
