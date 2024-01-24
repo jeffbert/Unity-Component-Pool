@@ -94,6 +94,24 @@ namespace Bert.Pool.Tests
 
             Object.DestroyImmediate(instance.gameObject);
         }
+        
+        [UnityTest]
+        public IEnumerator ActivatingGameObject_ShouldUnPoolInstance()
+        {
+            var instance = GetInstance();
+            instance.gameObject.SetActive(false);
+
+            yield return null;
+
+            instance.gameObject.SetActive(true);
+            
+            // New instance should be created since the previous instance was un-pooled.
+            var newInstance = GetInstance();
+            UnityEngine.Assertions.Assert.AreNotEqual(instance, newInstance);
+            
+            Object.DestroyImmediate(instance.gameObject);
+            Object.DestroyImmediate(newInstance.gameObject);
+        }
 
         [Test]
         public void GetInstance_ReturnsNewInstance_WhenPoolEmpty()

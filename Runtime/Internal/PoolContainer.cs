@@ -44,8 +44,6 @@ namespace Bert.Pool.Internal
                 return CreateInstance(source, position, rotation, parent);
 
             int index = _instances.Count - _poolCount;
-            --_poolCount;
-            
             (PoolObject poolObject, T instance) = _instances[index];
             poolObject.Activate(position, rotation, parent);
 
@@ -89,6 +87,12 @@ namespace Bert.Pool.Internal
         }
 
         /// <inheritdoc />
+        public void UnPool(PoolObject poolObject)
+        {
+            --_poolCount;
+        }
+
+        /// <inheritdoc />
         public void Pool(PoolObject poolObject)
         {
             ++_poolCount;
@@ -105,7 +109,7 @@ namespace Bert.Pool.Internal
         /// <inheritdoc />
         public void Destroy(PoolObject poolObject)
         {
-            // Instances are always pooled before they're destroyed.
+            // Instances are pooled on disable so they need to be un-pooled here.
             --_poolCount;
             
             int destroyedIndex = poolObject.Index;

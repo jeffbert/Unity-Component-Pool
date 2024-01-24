@@ -22,6 +22,13 @@ namespace Bert.Pool.Internal
             _transform = transform;
         }
 
+        private void OnEnable()
+        {
+            // Alert the manager when the object is enabled in case it's enabled without going through the component pool API.
+            // Un-pool will be ignored until the manager is set.
+            _manager?.UnPool(this);
+        }
+
         private void OnDisable()
         {
             _manager?.Pool(this);
