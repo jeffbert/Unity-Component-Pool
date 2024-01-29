@@ -1,4 +1,6 @@
-﻿using System.Collections;
+﻿#if TEST_FRAMEWORK_EXISTS
+
+using System.Collections;
 using Bert.Pool.Internal;
 using NUnit.Framework;
 using UnityEngine;
@@ -152,3 +154,5 @@ namespace Bert.Pool.Tests
         }
     }
 }
+
+#endif

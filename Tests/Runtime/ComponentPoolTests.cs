@@ -1,3 +1,5 @@
+#if TEST_FRAMEWORK_EXISTS
+
 using System.Collections;
 using System.Collections.Generic;
 using NUnit.Framework;
@@ -153,3 +155,5 @@ namespace Bert.Pool.Tests
         }
     }
 }
+
+#endif
