@@ -12,7 +12,7 @@ namespace Bert.Pool.Tests
     internal sealed class ComponentPoolTests
     {
         private MockMonoBehaviour _source;
-        
+
         [SetUp]
         public void Setup()
         {
@@ -24,48 +24,48 @@ namespace Bert.Pool.Tests
         {
             Object.DestroyImmediate(_source.gameObject);
         }
-        
+
         [Test]
         public void Get_ReturnsInstance()
         {
             var instance = ComponentPool.Get(_source);
             UnityEngine.Assertions.Assert.IsNotNull(instance);
             UnityEngine.Assertions.Assert.AreNotEqual(_source, instance);
-            
+
             Object.DestroyImmediate(instance.gameObject);
         }
-        
+
         [Test]
         public void Get_ReturnsDifferentInstance_ForDifferentSource()
         {
             var instance = ComponentPool.Get(_source);
             instance.gameObject.SetActive(false);
-            
+
             var otherSource = Utils.CreatePrimitive(PrimitiveType.Sphere).AddComponent<MockMonoBehaviour>();
             var otherInstance = ComponentPool.Get(otherSource);
-            
+
             UnityEngine.Assertions.Assert.AreNotEqual(instance, otherInstance);
-            
+
             Object.DestroyImmediate(instance.gameObject);
             Object.DestroyImmediate(otherSource.gameObject);
             Object.DestroyImmediate(otherInstance.gameObject);
         }
-        
+
         [UnityTest]
         public IEnumerator DestroyInstances_DestroysAll_ComponentTypeInstances()
         {
             var otherSource = Utils.CreatePrimitive(PrimitiveType.Sphere).AddComponent<MockMonoBehaviour>();
-            
+
             var instance1 = ComponentPool.Get(_source);
             var instance2 = ComponentPool.Get(otherSource);
-            
+
             ComponentPool.DestroyInstances<MockMonoBehaviour>();
 
             yield return null;
-            
+
             UnityEngine.Assertions.Assert.IsNull(instance1);
             UnityEngine.Assertions.Assert.IsNull(instance2);
-            
+
             Object.DestroyImmediate(otherSource.gameObject);
         }
 
@@ -86,19 +86,19 @@ namespace Bert.Pool.Tests
             yield return null;
             UnityEngine.Assertions.Assert.IsNull(instance);
         }
-        
+
         [UnityTest]
         public IEnumerator DestroySourceInstances_DoesNotDestroy_OtherSourceInstances()
         {
             var otherSource = Utils.CreatePrimitive(PrimitiveType.Sphere).AddComponent<MockMonoBehaviour>();
             var otherInstance = ComponentPool.Get(otherSource);
-            
+
             ComponentPool.DestroySourceInstances(_source);
-            
+
             yield return null;
-            
+
             UnityEngine.Assertions.Assert.IsNotNull(otherInstance);
-            
+
             Object.DestroyImmediate(otherSource.gameObject);
             Object.DestroyImmediate(otherInstance.gameObject);
         }
@@ -108,8 +108,25 @@ namespace Bert.Pool.Tests
         {
             const int instanceCount = 3;
             var instances = new MockMonoBehaviour[instanceCount];
-            
+
             ComponentPool.GetMany(instances, _source, Vector3.zero, Quaternion.identity);
+
+            foreach (var instance in instances)
+            {
+                UnityEngine.Assertions.Assert.IsNotNull(instance);
+                Object.DestroyImmediate(instance.gameObject);
+            }
+        }
+
+        [Test]
+        public void GetMany_AddsInstances_ToHashSet()
+        {
+            const int instanceCount = 3;
+            var instances = new HashSet<MockMonoBehaviour>(instanceCount);
+
+            ComponentPool.GetMany(instances, _source, instanceCount, Vector3.zero, Quaternion.identity);
+
+            Assert.That(instances.Count, Is.EqualTo(instanceCount));
 
             foreach (var instance in instances)
             {
@@ -123,7 +140,7 @@ namespace Bert.Pool.Tests
         {
             const int instanceCount = 3;
             var instances = new List<MockMonoBehaviour>(instanceCount);
-            
+
             ComponentPool.GetMany(instances, _source, instanceCount, Vector3.zero, Quaternion.identity);
 
             Assert.That(instances.Count, Is.EqualTo(instanceCount));
@@ -134,7 +151,26 @@ namespace Bert.Pool.Tests
                 Object.DestroyImmediate(instance.gameObject);
             }
         }
-        
+
+        [Test]
+        public void GetMany_AppendsInstances_ToExistingHashSet()
+        {
+            const int instanceCount = 1;
+            var instances = new HashSet<MockMonoBehaviour>();
+            ComponentPool.GetMany(instances, _source, instanceCount, Vector3.zero, Quaternion.identity);
+
+            const int appendInstanceCount = 2;
+            ComponentPool.GetMany(instances, _source, appendInstanceCount, Vector3.zero, Quaternion.identity);
+
+            Assert.That(instances.Count, Is.EqualTo(instanceCount + appendInstanceCount));
+
+            foreach (var instance in instances)
+            {
+                UnityEngine.Assertions.Assert.IsNotNull(instance);
+                Object.DestroyImmediate(instance.gameObject);
+            }
+        }
+
         [Test]
         public void GetMany_AppendsInstances_ToExistingList()
         {
@@ -144,7 +180,7 @@ namespace Bert.Pool.Tests
 
             const int appendInstanceCount = 2;
             ComponentPool.GetMany(instances, _source, appendInstanceCount, Vector3.zero, Quaternion.identity);
-            
+
             Assert.That(instances.Count, Is.EqualTo(instanceCount + appendInstanceCount));
 
             foreach (var instance in instances)

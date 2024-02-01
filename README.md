@@ -68,7 +68,7 @@ void Awake()
 
 Gets many instances in a single call.
 
-**List:** Adds the specified amount of instances to the list.
+**ICollection:** Adds the specified amount of instances to the collection.
 
 ```cs
 [SerializeField]

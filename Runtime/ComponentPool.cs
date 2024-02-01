@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Bert.Pool
 {
-    using InitInstanceDelegate = Action<List<Component>, Component, int, bool>;
+    using InitInstanceDelegate = Action<ICollection<Component>, Component, int, bool>;
 
     /// <summary>
     /// Utility class for getting pooled <see cref="Component"/> instances.
@@ -44,10 +44,10 @@ namespace Bert.Pool
             ComponentPool<T>.GetMany(instances, source, position, rotation, parent);
 
         /// <summary>
-        /// Adds instances of the <paramref name="source"/> to the <see cref="List{T}"/>.
+        /// Adds instances of the <paramref name="source"/> to the specified collection.
         /// </summary>
-        /// <remarks>Does not clear the <see cref="List{T}"/> before adding elements.</remarks>
-        public static void GetMany<T>(List<T> instances, T source, int quantity, Vector3 position, Quaternion rotation, Transform parent = null)
+        /// <remarks>Does not clear the <paramref name="instances"/> collection before adding elements.</remarks>
+        public static void GetMany<T>(ICollection<T> instances, T source, int quantity, Vector3 position, Quaternion rotation, Transform parent = null)
             where T : Component =>
             ComponentPool<T>.GetMany(instances, quantity, source, position, rotation, parent);
 
@@ -55,8 +55,8 @@ namespace Bert.Pool
         /// Creates instances of the <see cref="source"/> component, up to the requested <see cref="quantity"/>. The number of new instances
         /// created will be equal to the difference between the existing instance count and the requested <see cref="quantity"/>.
         /// </summary>
-        /// <remarks>Does not clear the <paramref name="createdInstances"/> list before adding created instances.</remarks>
-        public static void CreateInstances(List<Component> createdInstances, Component source, int quantity, bool dontDestroy)
+        /// <remarks>Does not clear the <paramref name="createdInstances"/> collection before adding created instances.</remarks>
+        public static void CreateInstances(ICollection<Component> createdInstances, Component source, int quantity, bool dontDestroy)
         {
             if (source == null)
                 throw new ArgumentNullException(nameof(source), "Couldn't create instances for null source component.");
@@ -129,14 +129,14 @@ namespace Bert.Pool
 
             PoolContainer<T> container = GetContainer(source);
             container.EnsureCapacity(instances.Length);
-            
+
             for (int i = instances.Length - 1; i >= 0; --i)
             {
                 instances[i] = container.GetInstance(source, position, rotation, parent);
             }
         }
 
-        public static void GetMany(List<T> instances, int quantity, T source, Vector3 position, Quaternion rotation, Transform parent = null)
+        public static void GetMany(ICollection<T> instances, int quantity, T source, Vector3 position, Quaternion rotation, Transform parent = null)
         {
             if (instances == null)
                 throw new ArgumentNullException(nameof(instances));
@@ -153,7 +153,7 @@ namespace Bert.Pool
             }
         }
 
-        public static void CreateInstances(List<Component> createdInstances, Component source, int quantity, bool dontDestroy)
+        public static void CreateInstances(ICollection<Component> createdInstances, Component source, int quantity, bool dontDestroy)
         {
             if (createdInstances == null)
                 throw new ArgumentNullException(nameof(createdInstances));
