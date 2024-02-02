@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor.IMGUI.Controls;
 
 namespace Bert.Pool.Editor
@@ -17,10 +18,13 @@ namespace Bert.Pool.Editor
         /// <param name="types">Search for all types derived from this type.</param>
         /// <param name="typeSelectedCallback">Action to invoke when a type is selected.</param>
         /// <param name="title">Dropdown title.</param>
-        public ComponentTypeDropdown(IReadOnlyList<Type> types, Action<Type> typeSelectedCallback, string title = null)
+        public ComponentTypeDropdown(IEnumerable<Type> types, Action<Type> typeSelectedCallback, string title = null)
             : base(new AdvancedDropdownState())
         {
-            _types = types ?? throw new ArgumentNullException(nameof(types));
+            if (types == null)
+                throw new ArgumentNullException(nameof(types));
+
+            _types = types as IReadOnlyList<Type> ?? types.ToArray();
             _typeSelectedCallback = typeSelectedCallback ?? throw new ArgumentNullException(nameof(typeSelectedCallback));
             _title = title ?? "Select Type";
         }
