@@ -7,11 +7,11 @@ namespace Bert.Pool.Internal
     /// Pool of <see cref="PoolObject"/> instances.
     /// </summary>
     /// <typeparam name="T">Type of component.</typeparam>
-    internal sealed class PoolContainer<T> : IPoolObjectManager 
+    internal sealed class PoolContainer<T> : IPoolObjectManager
         where T : Component
     {
         private static readonly string PoolInstanceSuffix = $" (Pool: {typeof(T).Name})";
-        
+
         private const int DefaultCapacity = 8;
 
         private readonly List<(PoolObject poolInstance, T component)> _instances = new List<(PoolObject, T)>(DefaultCapacity);
@@ -55,9 +55,9 @@ namespace Bert.Pool.Internal
         /// </summary>
         public T CreateInstance(Object source, Vector3 position, Quaternion rotation, Transform parent)
         {
-            T instance = (T) Object.Instantiate(source, position, rotation, parent);
+            T instance = (T)Object.Instantiate(source, position, rotation, parent);
             instance.gameObject.SetActive(true);
-            
+
 #if UNITY_EDITOR
             instance.name = GetPoolInstanceName(instance.name);
 #endif
@@ -65,7 +65,7 @@ namespace Bert.Pool.Internal
             var poolObject = instance.gameObject.AddComponent<PoolObject>();
             poolObject.SetManager(this);
             poolObject.Index = _instances.Count;
-            
+
             _instances.Add((poolObject, instance));
 
             return instance;
@@ -89,21 +89,25 @@ namespace Bert.Pool.Internal
         /// <inheritdoc />
         public void UnPool(PoolObject poolObject)
         {
+            // Un-pooled object's position in the list will be swapped with the first pooled instance.
+            int swapIndex = _instances.Count - _poolCount;
+
             --_poolCount;
+
+            // Manually un-pooling objects without going through the API should be less common, so an extra check is added to avoid unnecessary swaps.
+            if (poolObject.Index != swapIndex)
+            {
+                Swap(poolObject.Index, swapIndex);
+            }
         }
 
         /// <inheritdoc />
         public void Pool(PoolObject poolObject)
         {
             ++_poolCount;
-            int targetIndex = _instances.Count - _poolCount;
-            int activeIndex = poolObject.Index;
-            
+
             // Swap pooled object with last active instance in the list.
-            (_instances[activeIndex], _instances[targetIndex]) = (_instances[targetIndex], _instances[activeIndex]);
-            
-            _instances[activeIndex].poolInstance.Index = activeIndex;
-            _instances[targetIndex].poolInstance.Index = targetIndex;
+            Swap(poolObject.Index, _instances.Count - _poolCount);
         }
 
         /// <inheritdoc />
@@ -111,7 +115,7 @@ namespace Bert.Pool.Internal
         {
             // Instances are pooled on disable so they need to be un-pooled here.
             --_poolCount;
-            
+
             int destroyedIndex = poolObject.Index;
             int lastIndex = _instances.Count - 1;
 
@@ -119,6 +123,14 @@ namespace Bert.Pool.Internal
             _instances[destroyedIndex] = _instances[lastIndex];
             _instances[destroyedIndex].poolInstance.Index = destroyedIndex;
             _instances.RemoveAt(lastIndex);
+        }
+
+        private void Swap(int x, int y)
+        {
+            (_instances[x], _instances[y]) = (_instances[y], _instances[x]);
+
+            _instances[x].poolInstance.Index = x;
+            _instances[y].poolInstance.Index = y;
         }
 
         private static string GetPoolInstanceName(string name)

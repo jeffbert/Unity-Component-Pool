@@ -13,14 +13,14 @@ namespace Bert.Pool.Tests
     {
         private PoolContainer<MockMonoBehaviour> _container;
         private MockMonoBehaviour _source;
-        
+
         private MockMonoBehaviour GetInstance() => _container.GetInstance(_source, Vector3.zero, Quaternion.identity, null);
-        
+
         [SetUp]
         public void Setup()
         {
             _container = new PoolContainer<MockMonoBehaviour>();
-            _source =  new GameObject(nameof(MockMonoBehaviour)).AddComponent<MockMonoBehaviour>();
+            _source = new GameObject(nameof(MockMonoBehaviour)).AddComponent<MockMonoBehaviour>();
         }
 
         [TearDown]
@@ -96,23 +96,40 @@ namespace Bert.Pool.Tests
 
             Object.DestroyImmediate(instance.gameObject);
         }
-        
+
         [UnityTest]
-        public IEnumerator ActivatingGameObject_ShouldUnPoolInstance()
+        public IEnumerator ActivatingGameObjectManually_ShouldUnPool_InstanceFromPool()
         {
-            var instance = GetInstance();
-            instance.gameObject.SetActive(false);
+            var instance1 = GetInstance();
+            var instance2 = GetInstance();
+            var instance3 = GetInstance();
+
+            // Deactivating the instances in reverse order will preserves their order in the collection.
+            instance3.gameObject.SetActive(false);
+            instance2.gameObject.SetActive(false);
+            instance1.gameObject.SetActive(false);
 
             yield return null;
 
-            instance.gameObject.SetActive(true);
+            // Activating the instance without going through the API should still un-pool it.
+            instance2.gameObject.SetActive(true);
+
+            // Ensures that the correct instance is returned after un-pooling the other instance manually.
+            var expected1 = GetInstance();
+            var expected3 = GetInstance();
+
+            // Ensure the manually un-pooled instance doesn't get returned.
+            var instance4 = GetInstance();
             
-            // New instance should be created since the previous instance was un-pooled.
-            var newInstance = GetInstance();
-            UnityEngine.Assertions.Assert.AreNotEqual(instance, newInstance);
-            
-            Object.DestroyImmediate(instance.gameObject);
-            Object.DestroyImmediate(newInstance.gameObject);
+            UnityEngine.Assertions.Assert.AreEqual(instance1, expected1);
+            UnityEngine.Assertions.Assert.AreEqual(instance3, expected3);
+            UnityEngine.Assertions.Assert.AreNotEqual(instance3, instance4);
+            Assert.That(_container.InstanceCount, Is.EqualTo(4));
+
+            Object.DestroyImmediate(instance1.gameObject);
+            Object.DestroyImmediate(instance2.gameObject);
+            Object.DestroyImmediate(instance3.gameObject);
+            Object.DestroyImmediate(instance4.gameObject);
         }
 
         [Test]
