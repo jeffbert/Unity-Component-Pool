@@ -11,12 +11,12 @@ namespace Bert.Pool.Tests
 {
     internal sealed class ComponentPoolTests
     {
-        private MockMonoBehaviour _source;
+        private FakeMonoBehaviour _source;
 
         [SetUp]
         public void Setup()
         {
-            _source = Utils.CreatePrimitive(PrimitiveType.Sphere).AddComponent<MockMonoBehaviour>();
+            _source = Utils.CreatePrimitive(PrimitiveType.Sphere).AddComponent<FakeMonoBehaviour>();
         }
 
         [TearDown]
@@ -41,7 +41,7 @@ namespace Bert.Pool.Tests
             var instance = ComponentPool.Get(_source);
             instance.gameObject.SetActive(false);
 
-            var otherSource = Utils.CreatePrimitive(PrimitiveType.Sphere).AddComponent<MockMonoBehaviour>();
+            var otherSource = Utils.CreatePrimitive(PrimitiveType.Sphere).AddComponent<FakeMonoBehaviour>();
             var otherInstance = ComponentPool.Get(otherSource);
 
             UnityEngine.Assertions.Assert.AreNotEqual(instance, otherInstance);
@@ -54,12 +54,12 @@ namespace Bert.Pool.Tests
         [UnityTest]
         public IEnumerator DestroyInstances_DestroysAll_ComponentTypeInstances()
         {
-            var otherSource = Utils.CreatePrimitive(PrimitiveType.Sphere).AddComponent<MockMonoBehaviour>();
+            var otherSource = Utils.CreatePrimitive(PrimitiveType.Sphere).AddComponent<FakeMonoBehaviour>();
 
             var instance1 = ComponentPool.Get(_source);
             var instance2 = ComponentPool.Get(otherSource);
 
-            ComponentPool.DestroyInstances<MockMonoBehaviour>();
+            ComponentPool.DestroyInstances<FakeMonoBehaviour>();
 
             yield return null;
 
@@ -73,7 +73,7 @@ namespace Bert.Pool.Tests
         public IEnumerator DestroyInstances_DoesNotDestroy_Source()
         {
             _ = ComponentPool.Get(_source);
-            ComponentPool.DestroyInstances<MockMonoBehaviour>();
+            ComponentPool.DestroyInstances<FakeMonoBehaviour>();
             yield return null;
             UnityEngine.Assertions.Assert.IsNotNull(_source);
         }
@@ -90,7 +90,7 @@ namespace Bert.Pool.Tests
         [UnityTest]
         public IEnumerator DestroySourceInstances_DoesNotDestroy_OtherSourceInstances()
         {
-            var otherSource = Utils.CreatePrimitive(PrimitiveType.Sphere).AddComponent<MockMonoBehaviour>();
+            var otherSource = Utils.CreatePrimitive(PrimitiveType.Sphere).AddComponent<FakeMonoBehaviour>();
             var otherInstance = ComponentPool.Get(otherSource);
 
             ComponentPool.DestroySourceInstances(_source);
@@ -107,7 +107,7 @@ namespace Bert.Pool.Tests
         public void GetMany_FillsArray_WithInstances()
         {
             const int instanceCount = 3;
-            var instances = new MockMonoBehaviour[instanceCount];
+            var instances = new FakeMonoBehaviour[instanceCount];
 
             ComponentPool.GetMany(instances, _source, Vector3.zero, Quaternion.identity);
 
@@ -122,7 +122,7 @@ namespace Bert.Pool.Tests
         public void GetMany_AddsInstances_ToHashSet()
         {
             const int instanceCount = 3;
-            var instances = new HashSet<MockMonoBehaviour>(instanceCount);
+            var instances = new HashSet<FakeMonoBehaviour>(instanceCount);
 
             ComponentPool.GetMany(instances, _source, instanceCount, Vector3.zero, Quaternion.identity);
 
@@ -139,7 +139,7 @@ namespace Bert.Pool.Tests
         public void GetMany_AddsInstances_ToList()
         {
             const int instanceCount = 3;
-            var instances = new List<MockMonoBehaviour>(instanceCount);
+            var instances = new List<FakeMonoBehaviour>(instanceCount);
 
             ComponentPool.GetMany(instances, _source, instanceCount, Vector3.zero, Quaternion.identity);
 
@@ -156,7 +156,7 @@ namespace Bert.Pool.Tests
         public void GetMany_AppendsInstances_ToExistingHashSet()
         {
             const int instanceCount = 1;
-            var instances = new HashSet<MockMonoBehaviour>();
+            var instances = new HashSet<FakeMonoBehaviour>();
             ComponentPool.GetMany(instances, _source, instanceCount, Vector3.zero, Quaternion.identity);
 
             const int appendInstanceCount = 2;
@@ -175,7 +175,7 @@ namespace Bert.Pool.Tests
         public void GetMany_AppendsInstances_ToExistingList()
         {
             const int instanceCount = 1;
-            var instances = new List<MockMonoBehaviour>();
+            var instances = new List<FakeMonoBehaviour>();
             ComponentPool.GetMany(instances, _source, instanceCount, Vector3.zero, Quaternion.identity);
 
             const int appendInstanceCount = 2;

@@ -14,6 +14,7 @@ namespace Bert.Pool.Internal
 
         private const int DefaultCapacity = 8;
 
+        // Active instances are kept at the front of the list, while pooled instances are at the back (separated by _poolCount).
         private readonly List<(PoolObject poolInstance, T component)> _instances = new List<(PoolObject, T)>(DefaultCapacity);
         private int _poolCount;
 
@@ -89,24 +90,14 @@ namespace Bert.Pool.Internal
         /// <inheritdoc />
         public void UnPool(PoolObject poolObject)
         {
-            // Un-pooled object's position in the list will be swapped with the first pooled instance.
-            int swapIndex = _instances.Count - _poolCount;
-
+            Swap(poolObject.Index, _instances.Count - _poolCount);
             --_poolCount;
-
-            // Manually un-pooling objects without going through the API should be less common, so an extra check is added to avoid unnecessary swaps.
-            if (poolObject.Index != swapIndex)
-            {
-                Swap(poolObject.Index, swapIndex);
-            }
         }
 
         /// <inheritdoc />
         public void Pool(PoolObject poolObject)
         {
             ++_poolCount;
-
-            // Swap pooled object with last active instance in the list.
             Swap(poolObject.Index, _instances.Count - _poolCount);
         }
 
@@ -127,6 +118,9 @@ namespace Bert.Pool.Internal
 
         private void Swap(int x, int y)
         {
+            if (x == y)
+                return;
+
             (_instances[x], _instances[y]) = (_instances[y], _instances[x]);
 
             _instances[x].poolInstance.Index = x;
