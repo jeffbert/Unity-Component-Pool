@@ -16,7 +16,7 @@ namespace Bert.Pool
         private static readonly Dictionary<Type, InitInstanceDelegate> InitDelegateCache = new Dictionary<Type, InitInstanceDelegate>();
 
         /// <summary>
-        /// Get an instance of the <paramref name="source"/>. A new instance will be created if the pool is empty. 
+        /// Get an instance of the <paramref name="source"/>. A new instance will be created if the pool is empty.
         /// </summary>
         public static T Get<T>(T source, Transform parent = null)
             where T : Component =>
@@ -100,7 +100,7 @@ namespace Bert.Pool
         {
             if (source == null)
                 throw new ArgumentNullException(nameof(source), "Couldn't destroy instances for null source component.");
-            
+
             ComponentPool<T>.DestroyInstances(source);
         }
     }
@@ -109,7 +109,11 @@ namespace Bert.Pool
         where T : Component
     {
         // Each source object is mapped to its own distinct pool (different sources of the same type shouldn't use the same pool).
-        private static readonly Dictionary<UnityEngine.Object, PoolContainer<T>> Containers = new Dictionary<UnityEngine.Object, PoolContainer<T>>();
+#if UNITY_6000_5_OR_NEWER
+        private static readonly Dictionary<EntityId, PoolContainer<T>> Containers = new();
+#else
+        private static readonly Dictionary<int, PoolContainer<T>> Containers = new();
+#endif
 
         public static T Get(T source, Vector3 position, Quaternion rotation, Transform parent = null)
         {
@@ -146,7 +150,7 @@ namespace Bert.Pool
 
             PoolContainer<T> container = GetContainer(source);
             container.EnsureCapacity(quantity);
-            
+
             for (int i = 0; i < quantity; ++i)
             {
                 instances.Add(container.GetInstance(source, position, rotation, parent));
@@ -160,7 +164,7 @@ namespace Bert.Pool
 
             PoolContainer<T> container = GetContainer(source);
             container.EnsureCapacity(quantity);
-            
+
             int requiredQuantity = quantity - container.InstanceCount;
 
             if (dontDestroy)
@@ -170,14 +174,14 @@ namespace Bert.Pool
                     var instance = container.CreateInstance(source, Vector3.zero, Quaternion.identity, null);
                     UnityEngine.Object.DontDestroyOnLoad(instance);
                     createdInstances.Add(instance);
-                }  
+                }
             }
             else
             {
                 for (int i = 0; i < requiredQuantity; i++)
                 {
                     createdInstances.Add(container.CreateInstance(source, Vector3.zero, Quaternion.identity, null));
-                }   
+                }
             }
         }
 
@@ -187,25 +191,35 @@ namespace Bert.Pool
             {
                 container.DestroyInstances();
             }
-            
+
             Containers.Clear();
         }
 
         public static void DestroyInstances(Component source)
         {
-            if (!Containers.TryGetValue(source, out PoolContainer<T> container))
+#if UNITY_6000_5_OR_NEWER
+            var id = source.GetEntityId();
+#else
+            var id = source.GetInstanceID();
+#endif
+            if (!Containers.TryGetValue(id, out PoolContainer<T> container))
                 return;
-            
+
             container.DestroyInstances();
-            Containers.Remove(source);
+            Containers.Remove(id);
         }
 
         private static PoolContainer<T> GetContainer(UnityEngine.Object source)
         {
-            if (!Containers.TryGetValue(source, out PoolContainer<T> container))
+#if UNITY_6000_5_OR_NEWER
+            var id = source.GetEntityId();
+#else
+            var id = source.GetInstanceID();
+#endif
+            if (!Containers.TryGetValue(id, out PoolContainer<T> container))
             {
                 container = new PoolContainer<T>();
-                Containers[source] = container;
+                Containers[id] = container;
             }
 
             return container;
