@@ -189,6 +189,172 @@ namespace Bert.Pool.Tests
                 Object.DestroyImmediate(instance.gameObject);
             }
         }
+
+        [Test]
+        public void Get_WithInactiveParent_ReturnsDifferentInstances()
+        {
+            var pooled1 = ComponentPool.Get(_source);
+            var pooled2 = ComponentPool.Get(_source);
+            pooled1.gameObject.SetActive(false);
+            pooled2.gameObject.SetActive(false);
+
+            var inactiveParent = CreateInactiveParent();
+
+            var instance1 = ComponentPool.Get(_source, inactiveParent.transform);
+            var instance2 = ComponentPool.Get(_source, inactiveParent.transform);
+
+            Assert.That(instance1, Is.Not.SameAs(instance2), "An instance retrieved under an inactive parent must not stay in the pool.");
+
+            DestroyGameObjects(pooled1, pooled2, inactiveParent.transform);
+        }
+
+        [Test]
+        public void ActivatingParent_OfInstanceCreatedUnderInactiveParent_DoesNotThrow()
+        {
+            var inactiveParent = CreateInactiveParent();
+            _ = ComponentPool.Get(_source, inactiveParent.transform);
+
+            // The instance's OnEnable fires for the first time here, even though the pool already considers it active.
+            inactiveParent.SetActive(true);
+
+            DestroyGameObjects(inactiveParent.transform);
+        }
+
+        [Test]
+        public void ActivatingParent_OfInstanceCreatedUnderInactiveParent_DoesNotUnPoolOtherInstances()
+        {
+            var inactiveParent = CreateInactiveParent();
+            var hiddenInstance = ComponentPool.Get(_source, inactiveParent.transform);
+
+            var pooledInstance = ComponentPool.Get(_source);
+            pooledInstance.gameObject.SetActive(false);
+
+            inactiveParent.SetActive(true);
+
+            var instance = ComponentPool.Get(_source);
+
+            Assert.That(instance, Is.SameAs(pooledInstance), "The pooled instance should still be available.");
+
+            DestroyGameObjects(hiddenInstance, pooledInstance, instance, inactiveParent.transform);
+        }
+
+        [Test]
+        public void CreateInstances_WhilePoolHasPooledInstances_DoesNotPoolCreatedInstances()
+        {
+            var pooledInstance = ComponentPool.Get(_source);
+            pooledInstance.gameObject.SetActive(false);
+
+            var createdInstances = new List<Component>();
+            ComponentPool.CreateInstances(createdInstances, _source, 2, false);
+
+            var instance = ComponentPool.Get(_source);
+
+            Assert.That(createdInstances.Count, Is.EqualTo(1));
+            Assert.That(instance, Is.SameAs(pooledInstance), "Created instances are active, so the pooled instance should be returned.");
+
+            DestroyGameObjects(pooledInstance, createdInstances[0], instance);
+        }
+
+        [Test]
+        public void Get_WithBaseType_SharesPool_WithSourceType()
+        {
+            var instance = ComponentPool.Get(_source);
+            instance.gameObject.SetActive(false);
+
+            MonoBehaviour baseTypeInstance = ComponentPool.Get<MonoBehaviour>(_source);
+
+            Assert.That(baseTypeInstance, Is.SameAs(instance));
+
+            DestroyGameObjects(instance, baseTypeInstance);
+        }
+
+        [Test]
+        public void CreateInstances_ArePooled_ForGetWithBaseType()
+        {
+            var createdInstances = new List<Component>();
+            ComponentPool.CreateInstances(createdInstances, _source, 1, false);
+            createdInstances[0].gameObject.SetActive(false);
+
+            MonoBehaviour instance = ComponentPool.Get<MonoBehaviour>(_source);
+
+            Assert.That(instance, Is.SameAs(createdInstances[0]), "Instances created by a ComponentPoolInitializer should be reused.");
+
+            DestroyGameObjects(createdInstances[0], instance);
+        }
+
+        [Test]
+        public void Get_ReusedInstance_KeepsLocalScale_WhenPreviousParentWasScaled()
+        {
+            var scaledParent = new GameObject("Scaled Parent").transform;
+            scaledParent.localScale = Vector3.one * 2f;
+
+            var instance = ComponentPool.Get(_source, scaledParent);
+            instance.gameObject.SetActive(false);
+
+            var reusedInstance = ComponentPool.Get(_source);
+
+            Assert.That(reusedInstance, Is.SameAs(instance));
+            Assert.That(reusedInstance.transform.localScale, Is.EqualTo(_source.transform.localScale).Using(Vector3EqualityComparer.Instance));
+
+            DestroyGameObjects(instance, scaledParent);
+        }
+
+        [Test]
+        public void DestroySourceInstances_DoesNotThrow_WhenInstanceWasDestroyedBeforeBeingActivated()
+        {
+            var inactiveParent = CreateInactiveParent();
+            _ = ComponentPool.Get(_source, inactiveParent.transform);
+
+            // Objects that were never active don't receive OnDestroy, so the pool isn't notified.
+            Object.DestroyImmediate(inactiveParent);
+
+            Assert.DoesNotThrow(() => ComponentPool.DestroySourceInstances(_source));
+        }
+
+        [UnityTest]
+        public IEnumerator DestroyInstances_OfBaseType_DestroysDerivedTypeInstances()
+        {
+            var instance = ComponentPool.Get(_source);
+
+            ComponentPool.DestroyInstances<MonoBehaviour>();
+
+            yield return null;
+
+            UnityEngine.Assertions.Assert.IsNull(instance);
+        }
+
+        [Test]
+        public void ResetStatics_ClearsPools()
+        {
+            var instance = ComponentPool.Get(_source);
+            instance.gameObject.SetActive(false);
+
+            ComponentPool.ResetStatics();
+
+            var newInstance = ComponentPool.Get(_source);
+
+            Assert.That(newInstance, Is.Not.SameAs(instance));
+
+            DestroyGameObjects(instance, newInstance);
+        }
+
+        private static GameObject CreateInactiveParent()
+        {
+            var parent = new GameObject("Inactive Parent");
+            parent.SetActive(false);
+            return parent;
+        }
+
+        private static void DestroyGameObjects(params Component[] components)
+        {
+            foreach (var component in components)
+            {
+                if (component != null)
+                {
+                    Object.DestroyImmediate(component.gameObject);
+                }
+            }
+        }
     }
 }
 

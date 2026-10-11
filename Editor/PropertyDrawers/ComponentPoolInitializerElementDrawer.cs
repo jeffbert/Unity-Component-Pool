@@ -52,8 +52,6 @@ namespace Bert.Pool.Editor
 
         private static Rect DrawSource(Rect position, SerializedProperty property)
         {
-            Undo.RecordObject(property.serializedObject.targetObject, $"{nameof(ComponentPoolInitializerElement)}.{nameof(ComponentPoolInitializerElement._source)}");
-
             var sourceRect = new Rect(position) {width = position.width - GetQuantityFieldWidth(position) - GetDontDestroyFieldWidth(position)};
             var rect = sourceRect;
 

@@ -11,15 +11,15 @@ namespace Bert.Pool.Tests
 {
     internal class PoolContainerTests
     {
-        private PoolContainer<FakeMonoBehaviour> _container;
+        private PoolContainer _container;
         private FakeMonoBehaviour _source;
 
-        private FakeMonoBehaviour GetInstance() => _container.GetInstance(_source, Vector3.zero, Quaternion.identity, null);
+        private FakeMonoBehaviour GetInstance() => (FakeMonoBehaviour)_container.GetInstance(_source, Vector3.zero, Quaternion.identity, null);
 
         [SetUp]
         public void Setup()
         {
-            _container = new PoolContainer<FakeMonoBehaviour>();
+            _container = new PoolContainer(typeof(FakeMonoBehaviour));
             _source = new GameObject(nameof(FakeMonoBehaviour)).AddComponent<FakeMonoBehaviour>();
         }
 
@@ -168,6 +168,34 @@ namespace Bert.Pool.Tests
             UnityEngine.Assertions.Assert.IsNull(instance1);
             UnityEngine.Assertions.Assert.IsNull(instance2);
             Assert.That(_container.InstanceCount, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void DestroyingDisabledActiveInstance_KeepsPooledInstancesAvailable()
+        {
+            var instance1 = GetInstance();
+            var instance2 = GetInstance();
+            instance1.gameObject.SetActive(false);
+            instance2.gameObject.SetActive(false);
+
+            var inactiveParent = new GameObject("Inactive Parent");
+            inactiveParent.SetActive(false);
+
+            // Retrieved under an inactive parent: the instance is no longer pooled, but it stays disabled.
+            var hiddenInstance = _container.GetInstance(_source, Vector3.zero, Quaternion.identity, inactiveParent.transform);
+            Object.DestroyImmediate(hiddenInstance.gameObject);
+
+            Assert.That(_container.InstanceCount, Is.EqualTo(1));
+            Assert.That(_container.PooledCount, Is.EqualTo(1));
+
+            var pooledInstance = ReferenceEquals(hiddenInstance, instance1) ? instance2 : instance1;
+            var instance = GetInstance();
+
+            Assert.That(instance, Is.SameAs(pooledInstance));
+            Assert.That(_container.PooledCount, Is.EqualTo(0));
+
+            Object.DestroyImmediate(instance.gameObject);
+            Object.DestroyImmediate(inactiveParent);
         }
     }
 }

@@ -55,9 +55,15 @@ namespace Bert.Pool
         {
             foreach (var instance in _instances)
             {
-                instance.gameObject.SetActive(false);
+                // Instances could have been destroyed since Awake.
+                if (instance != null)
+                {
+                    instance.gameObject.SetActive(false);
+                }
             }
 
+            // The instances are owned by their pools now, so don't keep them referenced.
+            _instances = null;
             enabled = false;
         }
     }

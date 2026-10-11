@@ -6,34 +6,18 @@ namespace Bert.Pool.Editor
 {
     internal static class EditorIconUtility
     {
-        public static Texture2D GetEditorIcon(string iconName, string text = "")
-        {
-            return CreateExternalTexture(EditorGUIUtility.IconContent(iconName, text).image);
-        }
-        
+        // Icons are loaded and cached by the editor, so they can be used directly. They're not copied into new textures, since that
+        // would create a texture (and sync with the render thread) on every GUI event.
+        public static GUIContent GetEditorIcon(string iconName, string tooltip = "") => EditorGUIUtility.IconContent(iconName, tooltip);
+
         public static Texture2D GetTypeIcon(Type type)
         {
-            return CreateExternalTexture(EditorGUIUtility.ObjectContent(null, type).image);
-        }
-        
-        private static Texture2D CreateExternalTexture(Texture texture)
-        {
-            if (texture == null)
+            if (EditorGUIUtility.ObjectContent(null, type).image is Texture2D icon)
             {
-                texture = EditorGUIUtility.IconContent("cs Script Icon").image;
-                
-                if (texture == null)
-                    return new Texture2D(0, 0);
+                return icon;
             }
-            
-            return Texture2D.CreateExternalTexture(
-                texture.width,
-                texture.height,
-                TextureFormat.ARGB32,
-                false,
-                false,
-                texture.GetNativeTexturePtr()
-            );
+
+            return EditorGUIUtility.IconContent("cs Script Icon").image as Texture2D;
         }
     }
 }

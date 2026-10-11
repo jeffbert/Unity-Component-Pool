@@ -120,7 +120,7 @@ void Awake()
 
 ### `ComponentPool.DestroyInstances<T>`
 
-Destroys all component instances of the specified `T` type and clears all `T` pools.
+Destroys all component instances of the specified `T` type (including types derived from `T`) and clears their pools.
 
 ```cs
 [SerializeField]
