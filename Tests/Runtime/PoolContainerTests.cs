@@ -14,7 +14,7 @@ namespace Bert.Pool.Tests
         private PoolContainer _container;
         private FakeMonoBehaviour _source;
 
-        private FakeMonoBehaviour GetInstance() => (FakeMonoBehaviour)_container.GetInstance(_source, Vector3.zero, Quaternion.identity, null);
+        private FakeMonoBehaviour GetInstance() => _container.GetInstance(_source, Vector3.zero, Quaternion.identity, null);
 
         [SetUp]
         public void Setup()

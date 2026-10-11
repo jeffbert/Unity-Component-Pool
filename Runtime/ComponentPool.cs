@@ -52,8 +52,7 @@ namespace Bert.Pool
                 throw new ArgumentNullException(nameof(source), "Couldn't get instance for null source component.");
             }
 
-            // Instances are clones of the source, so they're always of type T.
-            return (T)GetContainer(source).GetInstance(source, position, rotation, parent);
+            return GetContainer(source).GetInstance(source, position, rotation, parent);
         }
 
         /// <summary>
@@ -77,7 +76,7 @@ namespace Bert.Pool
 
             for (int i = instances.Length - 1; i >= 0; --i)
             {
-                instances[i] = (T)container.GetInstance(source, position, rotation, parent);
+                instances[i] = container.GetInstance(source, position, rotation, parent);
             }
         }
 
@@ -103,7 +102,7 @@ namespace Bert.Pool
 
             for (int i = 0; i < quantity; ++i)
             {
-                instances.Add((T)container.GetInstance(source, position, rotation, parent));
+                instances.Add(container.GetInstance(source, position, rotation, parent));
             }
         }
 

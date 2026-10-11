@@ -68,7 +68,12 @@ namespace Bert.Pool.Internal
         /// <summary>
         /// Get an instance of the <paramref name="source"/>. A new instance will be created if the pool is empty.
         /// </summary>
-        public Component GetInstance(Component source, Vector3 position, Quaternion rotation, Transform parent)
+        public T GetInstance<T>(T source, Vector3 position, Quaternion rotation, Transform parent)
+            where T : Component =>
+            // Instances are clones of the source, so they're always of type T.
+            (T)GetOrCreateInstance(source, position, rotation, parent);
+
+        private Component GetOrCreateInstance(Component source, Vector3 position, Quaternion rotation, Transform parent)
         {
             if (_pooledCount == 0)
             {
